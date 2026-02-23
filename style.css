@@ -142,6 +142,14 @@ img {
   box-sizing: border-box;
 }
 
+.figure-img {
+  border: none;
+  outline: none;
+  box-shadow: none;
+  display: block;      /* avoids inline whitespace artifacts */
+  max-width: 100%;
+  height: auto;
+}
 /* --- Figure Placeholders --- */
 .figure-placeholder {
   width: 100%;
