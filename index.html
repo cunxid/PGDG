@@ -131,21 +131,40 @@
       We selected 4 bimanual tasks to benchmark policy performance: <b>RotateBox-Roll</b>, <b>RotateBox-Pitch</b>, <b>RotateBox-Yaw</b>, and <b>BarPass</b>. The RotateBox tasks involve reorienting a medium-sized cardboard box along different axes, requiring precise contact timing and force coordination. BarPass involves passing a bar between the two arms with both position and orientation accuracy.
     </div>
 
-    <!-- Placeholder: Task demo videos -->
-    <div style="display:flex; gap:15px; justify-content:center; margin-bottom:15px; flex-wrap:wrap;">
-      <div class="figure-placeholder" style="width:220px; height:180px;">
-        <span>RotateBox-Roll<br>Video</span>
-      </div>
-      <div class="figure-placeholder" style="width:220px; height:180px;">
-        <span>RotateBox-Pitch<br>Video</span>
-      </div>
-      <div class="figure-placeholder" style="width:220px; height:180px;">
-        <span>RotateBox-Yaw<br>Video</span>
-      </div>
-      <div class="figure-placeholder" style="width:220px; height:180px;">
-        <span>BarPass<br>Video</span>
-      </div>
-    </div>
+<!-- Task demo videos -->
+<div style="display:flex; gap:15px; justify-content:center; margin-bottom:15px; flex-wrap:wrap;">
+  <div style="width:220px; text-align:center;">
+    <video width="220" height="180" controls playsinline preload="metadata" style="display:block; border-radius:8px;">
+      <source src="vids/demo_sim_x.mov" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    <div style="margin-top:6px;">RotateBox-Roll</div>
+  </div>
+
+  <div style="width:220px; text-align:center;">
+    <video width="220" height="180" controls playsinline preload="metadata" style="display:block; border-radius:8px;">
+      <source src="vids/demo_sim_y.mov" type="video/mov">
+      Your browser does not support the video tag.
+    </video>
+    <div style="margin-top:6px;">RotateBox-Pitch</div>
+  </div>
+
+  <div style="width:220px; text-align:center;">
+    <video width="220" height="180" controls playsinline preload="metadata" style="display:block; border-radius:8px;">
+      <source src="vids/demo_sim_z.mov" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    <div style="margin-top:6px;">RotateBox-Yaw</div>
+  </div>
+
+  <div style="width:220px; text-align:center;">
+    <video width="220" height="180" controls playsinline preload="metadata" style="display:block; border-radius:8px;">
+      <source src="vids/demo_sim_bar.mov" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    <div style="margin-top:6px;">BarPass</div>
+  </div>
+</div>
     <p class="figure-caption">
       <b>Task demonstrations:</b> Four bimanual manipulation tasks used to evaluate policy robustness under domain randomization.
     </p>
