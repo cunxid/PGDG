@@ -198,19 +198,59 @@
     <div class="section-subtitle">Real-World Results.</div>
 
     <div style="display:flex; gap:15px; justify-content:center; margin-bottom:15px; flex-wrap:wrap;">
-      <div class="figure-placeholder" style="width:300px; height:220px;">
-        <span>Real-World Demo 1<br>Video Placeholder</span>
-      </div>
-      <div class="figure-placeholder" style="width:300px; height:220px;">
-        <span>Real-World Demo 2<br>Video Placeholder</span>
-      </div>
-      <div class="figure-placeholder" style="width:300px; height:220px;">
-        <span>Real-World Demo 3<br>Video Placeholder</span>
-      </div>
+    <div style="width:220px; text-align:center;">
+      <video width="220" height="180" controls playsinline preload="metadata" style="display:block; border-radius:8px;">
+        <source src="vids/demo_real_x.MP4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div style="margin-top:6px;">RotateBox-Row</div>
+    </div>
+    <div style="width:220px; text-align:center;">
+      <video width="220" height="180" controls playsinline preload="metadata" style="display:block; border-radius:8px;">
+        <source src="vids/demo_real_y.MOV" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div style="margin-top:6px;">RotateBox-Pitch</div>
+    </div>
+    <div style="width:220px; text-align:center;">
+      <video width="220" height="180" controls playsinline preload="metadata" style="display:block; border-radius:8px;">
+        <source src="vids/demo_real_z.MOV" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div style="margin-top:6px;">RotateBox-Yaw</div>
+    </div>
     </div>
     <p class="figure-caption">
       <b>Real-world deployment:</b> Policies trained on PGDG-generated data transfer to the real Dexmate Vega platform for contact-rich bimanual manipulation.
     </p>
+
+      <!-- Placeholder: Real-world experiment videos -->
+    <div class="section-subtitle">Continous Flipping</div>
+
+    <div style="display:flex; gap:15px; justify-content:center; margin-bottom:15px; flex-wrap:wrap;">
+    <div style="width:220px; text-align:center;">
+      <video width="220" height="180" controls playsinline preload="metadata" style="display:block; border-radius:8px;">
+        <source src="vids/demo_real_y_recovery.MOV" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div style="margin-top:6px;">RotateBox-Yaw</div>
+    </div>
+    </div>
+    <p class="figure-caption">
+      <b>Continous Flipping:</b> From a single demonstration of a box flip, our method generates a dataset that enables a policy to perform continuous flipping with recovery behaviors.
+    </p>
+
+    <div style="display:flex; gap:15px; justify-content:center; margin-bottom:15px; flex-wrap:wrap;">
+    <div style="width:220px; text-align:center;">
+      <video width="220" height="180" controls playsinline preload="metadata" style="display:block; border-radius:8px;">
+        <source src="vids/demo_real_y_cube.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div style="margin-top:6px;">RotateBox-Yaw</div>
+    </div>
+    </div>
+    <p class="figure-caption">
+      <b>Recovery behavior:</b> The policy natually learns how to recover from failure states.    </p>
 
     <!-- ==================== ACKNOWLEDGEMENTS ==================== -->
     <div class="tagline" id="acknowledgements">Acknowledgements.</div>
