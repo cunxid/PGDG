@@ -193,6 +193,32 @@ img {
   padding: 0 20px;
 }
 
+.two-video-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.two-video-card {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+}
+
+.two-video-card video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+@media (max-width: 760px) {
+  .two-video-row {
+    flex-direction: column;
+  }
+}
+
 /* --- Quick Links --- */
 .quick-links {
   text-align: center;
