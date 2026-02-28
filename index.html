@@ -121,6 +121,10 @@
     <!-- ==================== EXPERIMENTS ==================== -->
     <div class="tagline" id="experiments">Experiments.</div>
 
+    <div class="section">
+      We evaluate PGDG on four contact-rich bimanual manipulation tasks using both simulation and real-world experiments on the Dexmate Vega platform.
+    </div>
+
     <div class="section-subtitle">Hardware Setup.</div>
 
     <div class="section">
@@ -145,7 +149,7 @@
 <!-- Task demo videos -->
 <div style="display:flex; gap:15px; justify-content:center; margin-bottom:15px; flex-wrap:wrap;">
   <div style="width:220px; text-align:center;">
-    <video width="220" height="180" controls playsinline preload="metadata" style="display:block; border-radius:8px;">
+    <video width="220" height="180" controls playsinline preload="metadata" autoplay muted loop style="display:block; border-radius:8px;">
       <source src="vids/demo_sim_x.mov" type="video/mp4">
       Your browser does not support the video tag.
     </video>
@@ -153,7 +157,7 @@
   </div>
 
   <div style="width:220px; text-align:center;">
-    <video width="220" height="180" controls playsinline preload="metadata" style="display:block; border-radius:8px;">
+    <video width="220" height="180" controls playsinline preload="metadata" autoplay muted loop style="display:block; border-radius:8px;">
       <source src="vids/demo_sim_y.mov" type="video/mp4">
       Your browser does not support the video tag.
     </video>
@@ -161,7 +165,7 @@
   </div>
 
   <div style="width:220px; text-align:center;">
-    <video width="220" height="180" controls playsinline preload="metadata" style="display:block; border-radius:8px;">
+    <video width="220" height="180" controls playsinline preload="metadata" autoplay muted loop style="display:block; border-radius:8px;">
       <source src="vids/demo_sim_z.mov" type="video/mp4">
       Your browser does not support the video tag.
     </video>
@@ -169,7 +173,7 @@
   </div>
 
   <div style="width:220px; text-align:center;">
-    <video width="220" height="180" controls playsinline preload="metadata" style="display:block; border-radius:8px;">
+    <video width="220" height="180" controls playsinline preload="metadata" autoplay muted loop style="display:block; border-radius:8px;">
       <source src="vids/demo_sim_bar.mov" type="video/mp4">
       Your browser does not support the video tag.
     </video>
@@ -194,41 +198,168 @@
 
 
 
-    <!-- Placeholder: Real-world experiment videos -->
+    <!-- Real-world experiment videos with galleries -->
     <div class="section-subtitle">Real-World Results.</div>
 
-    <div style="display:flex; gap:15px; justify-content:center; margin-bottom:15px; flex-wrap:wrap;">
-    <div style="width:220px; text-align:center;">
-      <video width="220" height="180" controls playsinline preload="metadata" style="display:block; border-radius:8px;">
-        <source src="vids/demo_real_x.MP4" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
-      <div style="margin-top:6px;">RotateBox-Row</div>
+    <!-- RotateBox-Row Gallery -->
+    <div class="task-gallery-wrapper">
+      <div class="task-gallery-title">RotateBox-Row</div>
+      <div class="video-gallery-section">
+        <div class="gallery-nav-btn left" id="scrollLeftBtnX">‹</div>
+        <div class="video-gallery-container">
+          <div class="video-gallery-inner" id="videoGalleryX">
+            <div class="video-gallery-item">
+              <video controls playsinline preload="metadata" autoplay muted loop>
+                <source src="vids/x/C0721.MP4" type="video/mp4">
+              </video>
+            </div>
+            <div class="video-gallery-item">
+              <video controls playsinline preload="metadata" autoplay muted loop>
+                <source src="vids/x/X_1.MP4" type="video/mp4">
+              </video>
+            </div>
+            <div class="video-gallery-item">
+              <video controls playsinline preload="metadata" autoplay muted loop>
+                <source src="vids/x/X_2.MP4" type="video/mp4">
+              </video>
+            </div>
+            <div class="video-gallery-item">
+              <video controls playsinline preload="metadata" autoplay muted loop>
+                <source src="vids/x/X_3.MP4" type="video/mp4">
+              </video>
+            </div>
+            <div class="video-gallery-item">
+              <video controls playsinline preload="metadata" autoplay muted loop>
+                <source src="vids/x/X_4.MP4" type="video/mp4">
+              </video>
+            </div>
+            <div class="video-gallery-item">
+              <video controls playsinline preload="metadata" autoplay muted loop>
+                <source src="vids/x/X_5.MP4" type="video/mp4">
+              </video>
+            </div>
+          </div>
+        </div>
+        <div class="gallery-nav-btn right" id="scrollRightBtnX">›</div>
+      </div>
     </div>
-    <div style="width:220px; text-align:center;">
-      <video width="220" height="180" controls playsinline preload="metadata" style="display:block; border-radius:8px;">
-        <source src="vids/demo_real_y.MOV" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
-      <div style="margin-top:6px;">RotateBox-Pitch</div>
+
+    <!-- RotateBox-Pitch Gallery -->
+    <div class="task-gallery-wrapper">
+      <div class="task-gallery-title">RotateBox-Pitch</div>
+      <div class="video-gallery-section">
+        <div class="gallery-nav-btn left" id="scrollLeftBtnY">‹</div>
+        <div class="video-gallery-container">
+          <div class="video-gallery-inner" id="videoGalleryY">
+            <div class="video-gallery-item">
+              <video controls playsinline preload="metadata" autoplay muted loop>
+                <source src="vids/y/vlc-record-2026-02-23-10h02m05s-IMG_2010.MOV-.mp4" type="video/mp4">
+              </video>
+            </div>
+            <div class="video-gallery-item">
+              <video controls playsinline preload="metadata" autoplay muted loop>
+                <source src="vids/y/vlc-record-2026-02-23-10h08m20s-IMG_2010.MOV-.mp4" type="video/mp4">
+              </video>
+            </div>
+            <div class="video-gallery-item">
+              <video controls playsinline preload="metadata" autoplay muted loop>
+                <source src="vids/y/vlc-record-2026-02-23-10h09m44s-IMG_2010.MOV-.mp4" type="video/mp4">
+              </video>
+            </div>
+            <div class="video-gallery-item">
+              <video controls playsinline preload="metadata" autoplay muted loop>
+                <source src="vids/y/vlc-record-2026-02-23-10h17m11s-IMG_2014.MOV-.mp4" type="video/mp4">
+              </video>
+            </div>
+            <div class="video-gallery-item">
+              <video controls playsinline preload="metadata" autoplay muted loop>
+                <source src="vids/y/vlc-record-2026-02-23-10h19m19s-IMG_2014.MOV-.mp4" type="video/mp4">
+              </video>
+            </div>
+          </div>
+        </div>
+        <div class="gallery-nav-btn right" id="scrollRightBtnY">›</div>
+      </div>
     </div>
-    <div style="width:220px; text-align:center;">
-      <video width="220" height="180" controls playsinline preload="metadata" style="display:block; border-radius:8px;">
-        <source src="vids/demo_real_z.MOV" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
-      <div style="margin-top:6px;">RotateBox-Yaw</div>
+
+    <!-- RotateBox-Yaw Gallery -->
+    <div class="task-gallery-wrapper">
+      <div class="task-gallery-title">RotateBox-Yaw</div>
+      <div class="video-gallery-section">
+        <div class="gallery-nav-btn left" id="scrollLeftBtnZ">‹</div>
+        <div class="video-gallery-container">
+          <div class="video-gallery-inner" id="videoGalleryZ">
+            <div class="video-gallery-item">
+              <video controls playsinline preload="metadata" autoplay muted loop>
+                <source src="vids/z/C0694.MP4" type="video/mp4">
+              </video>
+            </div>
+            <div class="video-gallery-item">
+              <video controls playsinline preload="metadata" autoplay muted loop>
+                <source src="vids/z/Y_1.MP4" type="video/mp4">
+              </video>
+            </div>
+            <div class="video-gallery-item">
+              <video controls playsinline preload="metadata" autoplay muted loop>
+                <source src="vids/z/Y_2.MP4" type="video/mp4">
+              </video>
+            </div>
+            <div class="video-gallery-item">
+              <video controls playsinline preload="metadata" autoplay muted loop>
+                <source src="vids/z/Y_3.MP4" type="video/mp4">
+              </video>
+            </div>
+            <div class="video-gallery-item">
+              <video controls playsinline preload="metadata" autoplay muted loop>
+                <source src="vids/z/Y_5.MP4" type="video/mp4">
+              </video>
+            </div>
+          </div>
+        </div>
+        <div class="gallery-nav-btn right" id="scrollRightBtnZ">›</div>
+      </div>
     </div>
-        <div style="width:220px; text-align:center;">
-      <video width="220" height="180" controls playsinline preload="metadata" style="display:block; border-radius:8px;">
-        <source src="vids/demo_real_bar.MP4" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
-      <div style="margin-top:6px;">BarPass</div>
+
+    <!-- BarPass Gallery -->
+    <div class="task-gallery-wrapper">
+      <div class="task-gallery-title">BarPass</div>
+      <div class="video-gallery-section">
+        <div class="gallery-nav-btn left" id="scrollLeftBtnBar">‹</div>
+        <div class="video-gallery-container">
+          <div class="video-gallery-inner" id="videoGalleryBar">
+            <div class="video-gallery-item">
+              <video controls playsinline preload="metadata" autoplay muted loop>
+                <source src="vids/bar/bar_1.MOV" type="video/mp4">
+              </video>
+            </div>
+            <div class="video-gallery-item">
+              <video controls playsinline preload="metadata" autoplay muted loop>
+                <source src="vids/bar/bar_2.MOV" type="video/mp4">
+              </video>
+            </div>
+            <div class="video-gallery-item">
+              <video controls playsinline preload="metadata" autoplay muted loop>
+                <source src="vids/bar/bar_3.MOV" type="video/mp4">
+              </video>
+            </div>
+            <div class="video-gallery-item">
+              <video controls playsinline preload="metadata" autoplay muted loop>
+                <source src="vids/bar/bar_4.MOV" type="video/mp4">
+              </video>
+            </div>
+            <div class="video-gallery-item">
+              <video controls playsinline preload="metadata" autoplay muted loop>
+                <source src="vids/bar/bar_5.MOV" type="video/mp4">
+              </video>
+            </div>
+          </div>
+        </div>
+        <div class="gallery-nav-btn right" id="scrollRightBtnBar">›</div>
+      </div>
     </div>
-    </div>
+
     <p class="figure-caption">
-      <b>Real-world deployment:</b> Policies trained on PGDG-generated data transfer to the real Dexmate Vega platform for contact-rich bimanual manipulation.
+      <b>Real-world deployment:</b> Policies trained on PGDG-generated data transfer to the real Dexmate Vega platform for contact-rich bimanual manipulation. Use the arrow buttons to view multiple demonstration videos for each task.
     </p>
 
       <!-- Placeholder: Real-world experiment videos -->
@@ -236,7 +367,7 @@
 
     <div style="display:flex; gap:15px; justify-content:center; margin-bottom:15px; flex-wrap:wrap;">
     <div style="width:220px; text-align:center;">
-      <video width="220" height="180" controls playsinline preload="metadata" style="display:block; border-radius:8px;">
+      <video width="220" height="180" controls playsinline preload="metadata" autoplay muted loop style="display:block; border-radius:8px;">
         <source src="vids/demo_real_y_cube.mp4" type="video/mp4">
         Your browser does not support the video tag.
       </video>
@@ -245,7 +376,7 @@
     </div>
 
     <div style="width:220px; text-align:center;">
-      <video width="220" height="180" controls playsinline preload="metadata" style="display:block; border-radius:8px;">
+      <video width="220" height="180" controls playsinline preload="metadata" autoplay muted loop style="display:block; border-radius:8px;">
         <source src="vids/demo_real_y_recovery.mp4" type="video/mp4">
         Your browser does not support the video tag.
       </video>
@@ -278,6 +409,58 @@
   <div class="footer">
      &copy; PGDG Team | Source code is available <a href="https://github.com/gfchen01/PADA" target="_blank">here</a>.
   </div>
+
+  <script>
+    // Video gallery navigation
+    (function() {
+      const galleries = [
+        {
+          containerId: 'videoGalleryX',
+          leftBtnId: 'scrollLeftBtnX',
+          rightBtnId: 'scrollRightBtnX'
+        },
+        {
+          containerId: 'videoGalleryY',
+          leftBtnId: 'scrollLeftBtnY',
+          rightBtnId: 'scrollRightBtnY'
+        },
+        {
+          containerId: 'videoGalleryZ',
+          leftBtnId: 'scrollLeftBtnZ',
+          rightBtnId: 'scrollRightBtnZ'
+        },
+        {
+          containerId: 'videoGalleryBar',
+          leftBtnId: 'scrollLeftBtnBar',
+          rightBtnId: 'scrollRightBtnBar'
+        }
+      ];
+
+      galleries.forEach(function(gallery) {
+        const container = document.getElementById(gallery.containerId);
+        const leftBtn = document.getElementById(gallery.leftBtnId);
+        const rightBtn = document.getElementById(gallery.rightBtnId);
+
+        if (!container || !leftBtn || !rightBtn) return;
+
+        const scrollAmount = 235; // video width (220px) + gap (15px)
+
+        leftBtn.addEventListener('click', function() {
+          container.parentElement.scrollBy({
+            left: -scrollAmount,
+            behavior: 'smooth'
+          });
+        });
+
+        rightBtn.addEventListener('click', function() {
+          container.parentElement.scrollBy({
+            left: scrollAmount,
+            behavior: 'smooth'
+          });
+        });
+      });
+    })();
+  </script>
 
 </body>
 </html>
