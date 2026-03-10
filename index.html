@@ -44,9 +44,9 @@
     </div>
 
     <!-- Placeholder teaser video -->
-    <div class="figure-placeholder" style="height:400px;">
+    <!-- <div class="figure-placeholder" style="height:400px;">
       <span>Teaser Video Placeholder</span>
-    </div>
+    </div> -->
 
     <div class="tagline" id="abstract">Abstract.</div>
 
@@ -65,8 +65,17 @@
       Given a single collected demonstration, our pipeline proceeds in three stages: (1) spatial randomization to generate scene-variant trajectories, (2) an <em>inner loop</em> that samples open-loop nominal plans drifting from the demonstration while remaining near the recoverability frontier, and (3) an <em>outer loop</em> that selects a diverse subset and relabels risky segments with corrective actions.
     </div>
 
+
+        <img src="figs/exp_method.png" alt="Adaptive Recovery Tube" class="figure-img" style="width:100%;">
+    <p class="figure-caption">
+      <b>Figure 1: Method Overview. </b> Starting from a single demonstration variant <i>&tau;<sub>E</sub></i>, our method alternates between an inner loop and an outer loop: <b>(1) Success Sampling:</b> the inner loop samples physically feasible nominal plans using a control-point parameterization and executes rollouts in simulation; <b>(2) Curation Reward:</b> we use a curation reward to score successful rollouts and favor less-sampled informative regions; <b>(3) Diversity Selection:</b> we remove redundant trajectories by performing DPP in the DCT embedding space; <b>(4) Sampling Distribution Update:</b> we refit the sampling distribution with the selected subset to encourage the inner loop to explore informative regions in the next iteration; <b>(5) Local Relabeling:</b> finally, before adding trajectories to the dataset, we relabel some risky states with short-horizon CEM under a full-episode success check.
+    </p>
+
+
+
+
     <!-- ==================== INNER LOOP ==================== -->
-    <div class="section-subtitle" id="inner-loop">1. Inner Loop: Frontier-Seeking Success Sampling.</div>
+    <div class="section-subtitle" id="inner-loop">1. Inner Loop: Physics-Grounded Filtering.</div>
 
     <div class="section">
       The inner loop samples open-loop nominal plans and executes full episodes in simulation. The goal is to always sample at the most desirable region&mdash;neither too similar to the nominal trajectory nor too far away where the success rate drops. It collects <em>successful</em> recovery rollouts and estimates a data-driven recovery tube that tracks the recoverability frontier.
@@ -79,10 +88,9 @@
       <b>Figure 1: Adaptive Recovery Tube.</b> The recovery tube visualization shows successful and failed rollouts around the expert demonstration. The "Goldilocks zone" between trivial and dangerous regions is identified using the empirical success rate, focusing sampling where deviations are frequent yet recoverable.
     </p> -->
 
-    <img src="figs/adaptive_tube-website.png" alt="Adaptive Recovery Tube" class="figure-img" style="width:85%;">
-    <p class="figure-caption">
-      <b>Figure 1: Adaptive Recovery Tube.</b> The recovery tube visualization shows successful and failed rollouts around the expert demonstration. The "Goldilocks zone" between trivial and dangerous regions is identified using the empirical success rate, focusing sampling where deviations are frequent yet recoverable.
-    </p>
+
+
+
 
     <!-- ==================== OUTER LOOP ==================== -->
     <div class="section-subtitle" id="outer-loop">2. Outer Loop: Diversity-Preserving Curation &amp; Relabeling.</div>
@@ -108,12 +116,12 @@
     <div class="section-subtitle" id="Ablation">3. Datasize and performance</div>
 
     <div class="section">
-      We further ablate
+      We further ablate the role of diversity selection, by comparing the policy performance trained with the generated data, w and w/o DPP selection: 
     </div>
 
     <img src="figs/datasize_dpp_bg_fdfaf4.png" alt="Data Generation Example" class="figure-img" style="width:85%;">
     <p class="figure-caption">
-    <b>Figure 4:Policy performance vs.\ dataset size.</b> Success rate of depth-based ACT policies trained on datasets of increasing size generated from a single demonstration. Without diversity curation (w/o DPP), additional trajectories can be redundant and skew the training distribution, so larger datasets do not necessarily improve performance. In contrast, DPP-based subset selection yields a more balanced, non-redundant dataset and improves the success rate per collected trajectory.}
+    <b>Figure 4:Policy performance vs.\ dataset size.</b> Success rate of depth-based ACT policies trained on datasets of increasing size generated from a single demonstration. Without diversity curation (w/o DPP), additional trajectories can be redundant and skew the training distribution, so larger datasets do not necessarily improve performance. In contrast, DPP-based subset selection yields a more balanced, non-redundant dataset and improves the success rate per collected trajectory.
     </p>
 
 
