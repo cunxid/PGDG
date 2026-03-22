@@ -13,8 +13,8 @@
     <ul>
       <li><a href="#abstract">Abstract</a></li>
       <li><a href="#approach">Approach</a></li>
-      <li class="toc-subsection"><a href="#inner-loop">Inner Loop</a></li>
-      <li class="toc-subsection"><a href="#outer-loop">Outer Loop</a></li>
+      <li class="toc-subsection"><a href="#sampler">Physically Grounded Sampler</a></li>
+      <li class="toc-subsection"><a href="#curator">Dataset Curator</a></li>
       <li><a href="#experiments">Experiments</a></li>
       <li><a href="#acknowledgements">Acknowledgements</a></li>
     </ul>
@@ -33,7 +33,7 @@
     <!-- Teaser Figure -->
     <img src="figs/intro-website.png" alt="PGDG Pipeline Overview" class="figure-img" style="width:100%;">
     <p class="figure-caption">
-        <b>PGDG</b> transforms a single teleoperated demonstration into a compact dataset of successful, diverse recovery behaviors via a dual-loop pipeline: spatial randomization followed by frontier-focused sampling (inner loop) and diversity-preserving curation with selective relabeling (outer loop), producing robust behavior cloning policies for contact-rich bimanual manipulation.
+        <b>PGDG</b> transforms a single teleoperated demonstration into a compact dataset of successful, diverse recovery behaviors: spatial randomization followed by frontier-focused sampling (Physically Grounded Sampler) and diversity-preserving curation with selective relabeling (Dataset Curator), producing robust behavior cloning policies for contact-rich bimanual manipulation.
     </p>
 
     <!-- Quick Links -->
@@ -51,30 +51,30 @@
     <div class="tagline" id="abstract">Abstract.</div>
 
     <div class="section">
-      Behavior cloning for contact-rich bimanual manipulation remains challenging because diverse demonstrations are expensive to collect, and even small disturbances can push the system into off-manifold states where no recovery supervision is available. We propose PGDG, a data generation framework that expands a single demonstration into a compact dataset of physically plausible, successful, and diverse recovery behaviors without additional human labeling. At the core of PGDG is a zero-shot dataset curation framework. Physically Grounded Filtering synthesizes stochastic full-episode rollouts near the demonstration and retains successful candidates. The Dataset Curation Framework then prioritizes informative near-failure regions, curates a non-redundant subset of successful trajectories using training-free DCT embeddings and a determinantal point process objective, and selectively refines risky states with short-horizon sampling-based control to provide feedback-consistent corrective supervision. Across four bimanual manipulation tasks, PGDG consistently outperforms spatial-only augmentation in both simulation and zero-shot real-world transfer; for example, on RotateBox-Pitch, it improves success rate from 38% to 93% in simulation and from 35% to 82% on hardware. We also observe comparable gains when finetuning foundation models, improving success rate from 40% to 77.54%.
+      Behavior cloning for contact-rich bimanual manipulation remains challenging because diverse demonstrations are expensive to collect, and even small disturbances can push the system into off-manifold states where no recovery supervision is available. We propose PGDG, a zero-shot data generation framework that expands a single demonstration into a compact dataset of physically plausible, successful, and diverse recovery behaviors without additional human labeling. PGDG iterates between a physics-grounded sampler and a dataset curator, where the curator selects informative, non-redundant, and recoverable behaviors to update the sampling distribution toward under-covered recovery modes, and the sampler draws physically plausible rollout candidates from this updated distribution and retains successful trajectories. To improve data quality at the most risky states, PGDG further applies selective short-horizon sampling-based control to relabel selected risky states with corrective actions. Across four bimanual manipulation tasks, PGDG consistently outperforms spatial-only augmentation in both simulation and zero-shot real-world transfer; for example, on RotateBox-Pitch, it improves success rate from 38% to 93% in simulation and from 35% to 82% on hardware. We also observe comparable gains when finetuning foundation models, improving success rate from 40% to 78%.
     </div>
 
     <!-- ==================== APPROACH ==================== -->
     <div class="tagline" id="approach">Approach.</div>
 
     <div class="section">
-      Given a single collected demonstration, our pipeline proceeds in three stages: (1) spatial randomization to generate scene-variant trajectories, (2) an <em>inner loop</em> that samples open-loop nominal plans drifting from the demonstration while remaining near the recoverability frontier, and (3) an <em>outer loop</em> that selects a diverse subset and relabels risky segments with corrective actions.
+      Given a single collected demonstration, we first apply spatial randomization to produce configuration variants. For each variant, the <em>Physically Grounded Sampler</em> generates full-episode rollout candidates in simulation, while the <em>Dataset Curator</em> scores successful rollouts, removes redundant trajectories, and updates the sampling distribution toward informative recovery regions. After the final curation step, PGDG selectively relabels a small number of risky states with short-horizon CEM and adds the resulting trajectories to the dataset.
     </div>
 
 
         <img src="figs/exp_method.png" alt="Adaptive Recovery Tube" class="figure-img" style="width:100%;">
     <p class="figure-caption">
-      <b>Figure 1: Method Overview. </b> Starting from a single demonstration variant <i>&tau;<sub>E</sub></i>, our method alternates between an inner loop and an outer loop: <b>(1) Success Sampling:</b> the inner loop samples physically feasible nominal plans using a control-point parameterization and executes rollouts in simulation; <b>(2) Curation Reward:</b> we use a curation reward to score successful rollouts and favor less-sampled informative regions; <b>(3) Diversity Selection:</b> we remove redundant trajectories by performing DPP in the DCT embedding space; <b>(4) Sampling Distribution Update:</b> we refit the sampling distribution with the selected subset to encourage the inner loop to explore informative regions in the next iteration; <b>(5) Local Relabeling:</b> finally, before adding trajectories to the dataset, we relabel some risky states with short-horizon CEM under a full-episode success check.
+      <b>Figure 1: Method Overview. </b> Starting from a single demonstration variant <i>&tau;<sub>E</sub></i>, our method iterates between the <em>Physically Grounded Sampler</em> and the <em>Dataset Curator</em>: <b>(1) Success Sampling:</b> the Physically Grounded Sampler samples physically feasible nominal plans using a control-point parameterization and executes rollouts in simulation; <b>(2) Curation Reward:</b> we use a curation reward to score successful rollouts and favor less-sampled informative regions; <b>(3) Diversity Selection:</b> we remove redundant trajectories by performing DPP in the DCT embedding space; <b>(4) Sampling Distribution Update:</b> we refit the sampling distribution with the selected subset to encourage the Physically Grounded Sampler to explore informative regions in the next iteration; <b>(5) Local Relabeling:</b> finally, before adding trajectories to the dataset, we relabel some risky states with short-horizon CEM under a full-episode success check.
     </p>
 
 
 
 
     <!-- ==================== INNER LOOP ==================== -->
-    <div class="section-subtitle" id="inner-loop">1. Inner Loop: Physics-Grounded Filtering.</div>
+    <div class="section-subtitle" id="sampler">1. Physically Grounded Sampler: Physics-Grounded Filtering.</div>
 
     <div class="section">
-      The inner loop samples open-loop nominal plans and executes full episodes in simulation. The goal is to always sample at the most desirable region&mdash;neither too similar to the nominal trajectory nor too far away where the success rate drops. It collects <em>successful</em> recovery rollouts and estimates a data-driven recovery tube that tracks the recoverability frontier.
+      The Physically Grounded Sampler samples open-loop nominal plans and executes full episodes in simulation. The goal is to always sample at the most desirable region&mdash;neither too similar to the nominal trajectory nor too far away where the success rate drops. It collects <em>successful</em> recovery rollouts and estimates a data-driven recovery tube that tracks the recoverability frontier.
       <br><br>
       Target difficulty matters because recovery data has a "Goldilocks zone": near the demonstration there is no recovery signal, and far from the demonstration there are no successes. The adaptive tube bounds keep sampling in the narrow band where deviations are frequent yet recoverable, maximizing informative recovery supervision per rollout.
     </div>
@@ -89,22 +89,22 @@
 
 
     <!-- ==================== OUTER LOOP ==================== -->
-    <div class="section-subtitle" id="outer-loop">2. Outer Loop: Diversity-Preserving Curation &amp; Relabeling.</div>
+    <div class="section-subtitle" id="curator">2. Dataset Curator: Diversity-Preserving Curation &amp; Relabeling.</div>
 
     <div class="section">
-      The outer loop enforces dataset-level diversity among successful rollouts. It embeds trajectories with DCT, selects a mode-covering subset with DPP, and updates the nominal-plan distribution from the selected rollouts. It then relabels risky segments with more expert-like action labels via short-horizon CEM optimization, retaining only relabeled segments whose full-episode continuations succeed.
+      The Dataset Curator enforces dataset-level diversity among successful rollouts. It embeds trajectories with DCT, selects a mode-covering subset with DPP, and updates the nominal-plan distribution from the selected rollouts. It then relabels risky segments with more expert-like action labels via short-horizon CEM optimization, retaining only relabeled segments whose full-episode continuations succeed.
     </div>
 
 
-    <img src="figs/outer_loop_website.png" alt="Outer Loop: Diversity Selection and Relabeling" class="figure-img" style="width:75%;">
+    <img src="figs/outer_loop_website.png" alt="Dataset Curator: Diversity Selection and Relabeling" class="figure-img" style="width:75%;">
     <p class="figure-caption">
-      <b>Figure 2: Outer-loop diversity selection and relabeling.</b> (a) Inner-loop rollouts are embedded with DCT features, and a DPP selects a compact, diverse subset to maximize coverage per sample. (b) CEM relabeling refines the risky segments of selected trajectories by resampling action labels with corrective actions.
+      <b>Figure 2: Dataset Curator diversity selection and relabeling.</b> (a) Rollouts from the Physically Grounded Sampler are embedded with DCT features, and a DPP selects a compact, diverse subset to maximize coverage per sample. (b) CEM relabeling refines the risky segments of selected trajectories by resampling action labels with corrective actions.
     </p>
 
 
     <img src="figs/data_example_website.png" alt="Data Generation Example" class="figure-img" style="width:65%;">
     <p class="figure-caption">
-      <b>Figure 3: Data generation example.</b> Left: all sampled rollouts/trajectories generated by the sampler. Right: the subset of successful (and selected) trajectories retained and stored in the dataset.
+      <b>Figure 3: Data generation example.</b> Left: all sampled rollouts/trajectories generated by the Physically Grounded Sampler; green indicates successful trajectories and red denotes failed ones. Right: the subset of trajectories retained and stored in the dataset by the Dataset Curator; red ones are discarded due to excessive similarity under DPP selection.
     </p>
     
 
@@ -197,7 +197,7 @@
 
     <img src="figs/simulation_eval_fig_bg_fdfaf4.png" alt="Simulation Eval" class="figure-img" style="width:75%;">
     <p class="figure-caption">
-      <b>Figure 5: Policy evaluation in simulation.</b> <b>MimicGen</b> denotes data generated with only spatial randomization. <b>Ours w/o Relabel</b> denotes data generated without CEM relabeling. <b>Ours w/o DPP</b> denotes data generated with only inner loop sampling. Our full method achieves the highest success rates across tasks.
+      <b>Figure 5: Policy evaluation in simulation.</b> <b>MimicGen</b> denotes data generated with only spatial randomization. <b>Ours w/o Relabel</b> denotes data generated without CEM relabeling. <b>Ours w/o DPP</b> denotes data generated with only the Physically Grounded Sampler (no diversity curation). Our full method achieves the highest success rates across tasks.
     </p>
 
 
@@ -205,9 +205,9 @@
     <!-- Real-world experiment videos with galleries -->
     <div class="section-subtitle">Real-World Results.</div>
 
-    <!-- RotateBox-Row Gallery -->
+    <!-- RotateBox-Roll Gallery -->
     <div class="task-gallery-wrapper">
-      <div class="task-gallery-title">RotateBox-Row</div>
+      <div class="task-gallery-title">RotateBox-Roll</div>
       <div class="video-gallery-section">
         <div class="gallery-nav-btn left" id="scrollLeftBtnX">‹</div>
         <div class="video-gallery-container">
@@ -367,7 +367,7 @@
     </p>
 
       <!-- Placeholder: Real-world experiment videos -->
-    <div class="section-subtitle">Continous Flipping</div>
+    <div class="section-subtitle">Continuous Flipping</div>
 
     <!-- Continuous Flipping Gallery -->
     <div class="task-gallery-wrapper">
