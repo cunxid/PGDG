@@ -13,8 +13,8 @@
     <ul>
       <li><a href="#abstract">Abstract</a></li>
       <li><a href="#approach">Approach</a></li>
-      <li class="toc-subsection"><a href="#sampler">Physically Grounded Sampler</a></li>
-      <li class="toc-subsection"><a href="#curator">Dataset Curator</a></li>
+      <li class="toc-subsection"><a href="#sampler"><span class="term-sampler">Physically Grounded Sampler</span></a></li>
+      <li class="toc-subsection"><a href="#curator"><span class="term-curator">Dataset Curator</span></a></li>
       <li><a href="#experiments">Experiments</a></li>
       <li><a href="#acknowledgements">Acknowledgements</a></li>
     </ul>
@@ -31,9 +31,9 @@
     </div>
 
     <!-- Teaser Figure -->
-    <img src="figs/intro-website.png" alt="PGDG Pipeline Overview" class="figure-img" style="width:100%;">
+    <img src="figs/intro_0325.png" alt="PGDG Pipeline Overview" class="figure-img" style="width:100%;">
     <p class="figure-caption">
-        <b>PGDG</b> transforms a single teleoperated demonstration into a compact dataset of successful, diverse recovery behaviors: spatial randomization followed by frontier-focused sampling (Physically Grounded Sampler) and diversity-preserving curation with selective relabeling (Dataset Curator), producing robust behavior cloning policies for contact-rich bimanual manipulation.
+        <b>PGDG</b> transforms a single teleoperated demonstration into a compact dataset of successful, diverse recovery behaviors: spatial randomization followed by frontier-focused sampling (<span class="term-sampler">Physically Grounded Sampler</span>) and diversity-preserving curation with selective relabeling (<span class="term-curator">Dataset Curator</span>), producing robust behavior cloning policies for contact-rich bimanual manipulation.
     </p>
 
     <!-- Quick Links -->
@@ -58,23 +58,24 @@
     <div class="tagline" id="approach">Approach.</div>
 
     <div class="section">
-      Given a single collected demonstration, we first apply spatial randomization to produce configuration variants. For each variant, the <em>Physically Grounded Sampler</em> generates full-episode rollout candidates in simulation, while the <em>Dataset Curator</em> scores successful rollouts, removes redundant trajectories, and updates the sampling distribution toward informative recovery regions. After the final curation step, PGDG selectively relabels a small number of risky states with short-horizon CEM and adds the resulting trajectories to the dataset.
+      Given a single collected demonstration, we first apply spatial randomization to produce configuration variants. For each variant, the <em class="term-sampler">Physically Grounded Sampler</em> generates full-episode rollout candidates in simulation, while the <em class="term-curator">Dataset Curator</em> scores successful rollouts, removes redundant trajectories, and updates the sampling distribution toward informative recovery regions. After the final curation step, PGDG selectively relabels a small number of risky states with short-horizon CEM and adds the resulting trajectories to the dataset.
     </div>
 
 
         <img src="figs/exp_method.png" alt="Adaptive Recovery Tube" class="figure-img" style="width:100%;">
     <p class="figure-caption">
-      <b>Figure 1: Method Overview. </b> Starting from a single demonstration variant <i>&tau;<sub>E</sub></i>, our method iterates between the <em>Physically Grounded Sampler</em> and the <em>Dataset Curator</em>: <b>(1) Success Sampling:</b> the Physically Grounded Sampler samples physically feasible nominal plans using a control-point parameterization and executes rollouts in simulation; <b>(2) Curation Reward:</b> we use a curation reward to score successful rollouts and favor less-sampled informative regions; <b>(3) Diversity Selection:</b> we remove redundant trajectories by performing DPP in the DCT embedding space; <b>(4) Sampling Distribution Update:</b> we refit the sampling distribution with the selected subset to encourage the Physically Grounded Sampler to explore informative regions in the next iteration; <b>(5) Local Relabeling:</b> finally, before adding trajectories to the dataset, we relabel some risky states with short-horizon CEM under a full-episode success check.
+      <b>Method Overview. </b> Starting from a single demonstration variant <i>&tau;<sub>E</sub></i>, our method iterates between the <em class="term-sampler">Physically Grounded Sampler</em> and the <em class="term-curator">Dataset Curator</em>: <b>(1) Success Sampling:</b> the <span class="term-sampler">Physically Grounded Sampler</span> samples physically feasible nominal plans using a control-point parameterization and executes rollouts in simulation; <b>(2) Curation Reward:</b> we use a curation reward to score successful rollouts and favor less-sampled informative regions; <b>(3) Diversity Selection:</b> we remove redundant trajectories by performing DPP in the DCT embedding space; <b>(4) Sampling Distribution Update:</b> we refit the sampling distribution with the selected subset to encourage the <span class="term-sampler">Physically Grounded Sampler</span> to explore informative regions in the next iteration;  <b> (5) <span class="term-relabel">CEM Local Relabeling</span>:</b> finally, before adding trajectories to the dataset, we relabel some risky states with short-horizon CEM under a full-episode success check.
     </p>
 
 
 
 
     <!-- ==================== INNER LOOP ==================== -->
-    <div class="section-subtitle" id="sampler">1. Physically Grounded Sampler: Physics-Grounded Filtering.</div>
+    <div class="section-subtitle" id="sampler"><span class="term-sampler">Physically Grounded Sampler</span> and <span class="term-curator">Dataset Curator</span></div>
 
     <div class="section">
-      The Physically Grounded Sampler samples open-loop nominal plans and executes full episodes in simulation. The goal is to always sample at the most desirable region, neither too similar to the nominal trajectory nor too far away where the success rate drops. 
+      The <span class="term-sampler">Physically Grounded Sampler</span> samples open-loop nominal plans and executes full episodes in simulation. The goal is to always sample at the most desirable region, neither too similar to the nominal trajectory nor too far away where the success rate drops.       The <span class="term-curator">Dataset Curator</span> enforces dataset-level diversity among successful rollouts. It embeds trajectories with DCT, selects a mode-covering subset with DPP, and updates the nominal-plan distribution from the selected rollouts. It then relabels risky segments with more expert-like action labels via short-horizon CEM optimization, retaining only relabeled segments whose full-episode continuations succeed.
+
       <!-- It collects <em>successful</em> recovery rollouts and estimates a data-driven recovery tube that tracks the recoverability frontier. -->
       <!-- <br><br> -->
       <!-- Target difficulty matters because recovery data has a "Goldilocks zone": near the demonstration there is no recovery signal, and far from the demonstration there are no successes. The adaptive tube bounds keep sampling in the narrow band where deviations are frequent yet recoverable, maximizing informative recovery supervision per rollout. -->
@@ -87,30 +88,14 @@
 
 
 
-
-
-    <!-- ==================== OUTER LOOP ==================== -->
-    <div class="section-subtitle" id="curator">2. Dataset Curator: Diversity-Preserving Curation &amp; Relabeling.</div>
-
-    <div class="section">
-      The Dataset Curator enforces dataset-level diversity among successful rollouts. It embeds trajectories with DCT, selects a mode-covering subset with DPP, and updates the nominal-plan distribution from the selected rollouts. It then relabels risky segments with more expert-like action labels via short-horizon CEM optimization, retaining only relabeled segments whose full-episode continuations succeed.
-    </div>
-
-
-    <img src="figs/outer_loop_website.png" alt="Dataset Curator: Diversity Selection and Relabeling" class="figure-img" style="width:75%;">
+    <img src="figs/data_example_0325.png" alt="Data Generation Example" class="figure-img" style="width:75%;">
     <p class="figure-caption">
-      <b>Figure 2: Dataset Curator diversity selection and relabeling.</b> (a) Rollouts from the Physically Grounded Sampler are embedded with DCT features, and a DPP selects a compact, diverse subset to maximize coverage per sample. (b) CEM relabeling refines the risky segments of selected trajectories by resampling action labels with corrective actions.
-    </p>
-
-
-    <img src="figs/data_example_website.png" alt="Data Generation Example" class="figure-img" style="width:65%;">
-    <p class="figure-caption">
-      <b>Figure 3: Data generation example.</b> Left: all sampled rollouts/trajectories generated by the Physically Grounded Sampler; green indicates successful trajectories and red denotes failed ones. Right: the subset of trajectories retained and stored in the dataset by the Dataset Curator; red ones are discarded due to excessive similarity under DPP selection.
+      <b>Data generation example.</b> Left: all sampled rollouts/trajectories generated by the <span class="term-sampler">Physically Grounded Sampler</span>; green indicates successful trajectories and red denotes failed ones. Right: the subset of trajectories retained and stored in the dataset by the <span class="term-curator">Dataset Curator</span>; red ones are discarded due to excessive similarity under DPP selection.
     </p>
     
 
         <!-- ==================== ABLATION ==================== -->
-    <div class="section-subtitle" id="Ablation">3. Datasize and performance</div>
+    <div class="section-subtitle" id="Ablation">Role of Diversity-Preserving Selection</div>
 
     <!-- <div class="section">
       We further ablate the role of diversity selection, by comparing the policy performance trained with the generated data, w and w/o DPP selection: 
@@ -118,7 +103,7 @@
 
     <img src="figs/datasize_dpp_bg_fdfaf4.png" alt="Data Generation Example" class="figure-img" style="width:85%;">
     <p class="figure-caption">
-    <b>Figure 4:Policy performance vs.\ dataset size.</b> Success rate of depth-based ACT policies trained on datasets of increasing size generated from a single demonstration. Without diversity curation (w/o DPP), additional trajectories can be redundant and skew the training distribution, so larger datasets do not necessarily improve performance. In contrast, DPP-based subset selection yields a more balanced, non-redundant dataset and improves the success rate per collected trajectory.
+    <b>Policy performance vs.\ dataset size.</b> Success rate of depth-based ACT policies trained on datasets of increasing size generated from a single demonstration. Without diversity curation (w/o DPP), additional trajectories can be redundant and skew the training distribution, so larger datasets do not necessarily improve performance. In contrast, DPP-based subset selection yields a more balanced, non-redundant dataset and improves the success rate per collected trajectory.
     </p>
 
 
@@ -130,16 +115,11 @@
       <!-- We evaluate PGDG on four contact-rich bimanual manipulation tasks using both simulation and real-world experiments on the Dexmate Vega platform. -->
     </div>
 
-    <div class="section-subtitle">Hardware Setup.</div>
-
-    <div class="section">
-      We collect source demonstrations on the Dexmate Vega platform, a bimanual mobile manipulator with a pair of 7-DoF arms and wrist F/T sensors. We utilized a wearable GELLO-style exoskeleton for end-effector space teaching.
-    </div>
 
 
     <img src="figs/exoskeleton.png" alt="Teleoperation Setup" class="figure-img" style="width:65%;">
     <p class="figure-caption">
-      <b>Figure 4: Teleoperation setup.</b> A GELLO-style exoskeleton is used to perform Cartesian space teaching in simulation on the Dexmate Vega bimanual platform.
+      <b>Teleoperation setup.</b> A GELLO-style exoskeleton is used to perform Cartesian space teaching in simulation on the Dexmate Vega bimanual platform.
     </p>
 
 
@@ -199,7 +179,7 @@
 
     <img src="figs/simulation_eval_fig_bg_fdfaf4.png" alt="Simulation Eval" class="figure-img" style="width:75%;">
     <p class="figure-caption">
-      <b>Figure 5: Policy evaluation in simulation.</b> <b>MimicGen</b> denotes data generated with only spatial randomization. <b>Ours w/o Relabel</b> denotes data generated without CEM relabeling. <b>Ours w/o DPP</b> denotes data generated with only the Physically Grounded Sampler (no diversity curation). Our full method achieves the highest success rates across tasks.
+      <b>Policy evaluation in simulation.</b> <b>MimicGen</b> denotes data generated with only spatial randomization. <b>Ours w/o Relabel</b> denotes data generated without <span class="term-relabel">CEM relabeling</span>. <b>Ours w/o DPP</b> denotes data generated with only the <span class="term-sampler">Physically Grounded Sampler</span> (no diversity curation). Our full method achieves the highest success rates across tasks.
     </p>
 
 
