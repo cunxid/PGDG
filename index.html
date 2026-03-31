@@ -185,26 +185,73 @@
       We also evaluated the finetuning performance for GR00T; policies finetuned on our generated data significantly outperform those finetuned on spatially augmented data
     </div>
 
-    <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin:24px 0;">
-      <video controls muted playsinline style="width:100%; border-radius:8px; background:#000;">
-        <source src="vids/GR00T/GR00T_X.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
-      <video controls muted playsinline style="width:100%; border-radius:8px; background:#000;">
-        <source src="vids/GR00T/GR00T_Y.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
-      <video controls muted playsinline style="width:100%; border-radius:8px; background:#000;">
-        <source src="vids/GR00T/GR00T_Z.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
-      <video controls muted playsinline style="width:100%; border-radius:8px; background:#000;">
-        <source src="vids/GR00T/GR00T_bar.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
-    </div>
+<div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin:24px 0;">
 
-    
+  <div style="text-align:center;">
+    <video controls muted playsinline style="width:100%; border-radius:8px; background:#000;">
+      <source src="vids/GR00T/GR00T_X.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    <div style="margin-top:8px; font-size:14px; font-weight:500;">RotateBox-Row</div>
+  </div>
+
+  <div style="text-align:center;">
+    <video controls muted playsinline style="width:100%; border-radius:8px; background:#000;">
+      <source src="vids/GR00T/GR00T_Y.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    <div style="margin-top:8px; font-size:14px; font-weight:500;">RotateBox—Pitch</div>
+  </div>
+
+  <div style="text-align:center;">
+    <video controls muted playsinline style="width:100%; border-radius:8px; background:#000;">
+      <source src="vids/GR00T/GR00T_Z.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    <div style="margin-top:8px; font-size:14px; font-weight:500;">RotateBox-Yaw</div>
+  </div>
+
+  <div style="text-align:center;">
+    <video controls muted playsinline style="width:100%; border-radius:8px; background:#000;">
+      <source src="vids/GR00T/GR00T_bar.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    <div style="margin-top:8px; font-size:14px; font-weight:500;">BarPass</div>
+  </div>
+
+</div>
+
+<table style="border-collapse: collapse; font-size: 90%; text-align: center;">
+  <caption style="caption-side: top; text-align: center; font-weight: bold; margin-bottom: 6px;">
+    GR00T fine-tuning results (success rate, %).
+  </caption>
+  <thead>
+    <tr style="border-top: 2px solid black; border-bottom: 1px solid black;">
+      <th style="padding: 6px 12px; text-align: left;">Fine-tuning Data</th>
+      <th style="padding: 6px 12px;">RB-Y</th>
+      <th style="padding: 6px 12px;">RB-P</th>
+      <th style="padding: 6px 12px;">RB-R</th>
+      <th style="padding: 6px 12px;">Bar</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 6px 12px; text-align: left;"><b>Ours (PGDG)</b></td>
+      <td style="padding: 6px 12px;">87.5</td>
+      <td style="padding: 6px 12px;">77.5</td>
+      <td style="padding: 6px 12px;">72.5</td>
+      <td style="padding: 6px 12px;">70.0</td>
+    </tr>
+    <tr style="border-bottom: 2px solid black;">
+      <td style="padding: 6px 12px; text-align: left;"><b>Spatial (MimicGen)</b></td>
+      <td style="padding: 6px 12px;">65.0</td>
+      <td style="padding: 6px 12px;">40.0</td>
+      <td style="padding: 6px 12px;">45.0</td>
+      <td style="padding: 6px 12px;">35.0</td>
+    </tr>
+  </tbody>
+</table>
+
 
     <!-- Real-world experiment videos with galleries -->
     <div class="section-subtitle">Real-World Results.</div>
