@@ -338,6 +338,50 @@ img {
   color: #333;
 }
 
+.realworld-task-row {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 36px;
+}
+
+.realworld-demo-panel {
+  flex: 0 0 220px;
+}
+
+.realworld-demo-panel video {
+  width: 220px;
+  height: 180px;
+  display: block;
+  border-radius: 8px;
+}
+
+.realworld-gallery-panel {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.realworld-task-row .video-gallery-section {
+  margin-bottom: 0;
+}
+
+@media (max-width: 980px) {
+  .realworld-task-row {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .realworld-demo-panel {
+    flex: 1 1 auto;
+    max-width: 420px;
+  }
+
+  .realworld-demo-panel video {
+    width: 100%;
+    height: auto;
+  }
+}
+
 /* --- Quick Links --- */
 .quick-links {
   text-align: center;
