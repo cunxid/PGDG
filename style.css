@@ -403,6 +403,35 @@ img {
   color: #000;
 }
 
+.interactive-demo-shell {
+  margin: 0 auto 24px;
+  padding: 16px;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.66));
+  box-shadow: 0 18px 40px rgba(31, 25, 14, 0.08);
+}
+
+.interactive-demo-frame {
+  display: block;
+  width: 100%;
+  min-height: 1480px;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+}
+
+@media (max-width: 760px) {
+  .interactive-demo-shell {
+    padding: 10px;
+    border-radius: 18px;
+  }
+
+  .interactive-demo-frame {
+    min-height: 1820px;
+  }
+}
+
 /* --- Footer --- */
 .footer {
   font-size: 14px;

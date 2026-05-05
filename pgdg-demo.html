@@ -1,0 +1,2658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PGDG Interactive Demo</title>
+  <script>
+    if (new URLSearchParams(window.location.search).get("embed") === "1") {
+      document.documentElement.classList.add("embed-mode");
+    }
+  </script>
+  <style>
+    :root {
+      --bg: #fdfaf4;
+      --ink: #1b1b1b;
+      --muted: #555;
+      --line: rgba(27, 27, 27, 0.16);
+      --panel: rgba(255, 255, 255, 0.66);
+      --panel-strong: rgba(255, 255, 255, 0.84);
+      --sampler: #ccefd6;
+      --curator: #d6e8ff;
+      --relabel: #e9ddff;
+      --success: #2b7a4b;
+      --danger: #a53d2d;
+      --accent: #23395d;
+      --gold: #e8c06b;
+      --shadow: 0 18px 48px rgba(31, 25, 14, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top left, rgba(214, 232, 255, 0.22), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(204, 239, 214, 0.24), transparent 34%),
+        var(--bg);
+      color: var(--ink);
+      font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+      padding: 52px 26px 72px;
+    }
+
+    .embed-mode body {
+      padding: 20px 14px 28px;
+    }
+
+    button,
+    input,
+    textarea,
+    pre {
+      font-family: "Roboto Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    .page {
+      max-width: 1420px;
+      margin: 0 auto;
+    }
+
+    .embed-mode .page {
+      max-width: none;
+    }
+
+    .hero {
+      margin-bottom: 28px;
+    }
+
+    .embed-mode .hero {
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: clamp(48px, 6.4vw, 78px);
+      line-height: 0.96;
+      letter-spacing: -1.6px;
+    }
+
+    .embed-mode .hero h1 {
+      font-size: clamp(34px, 5vw, 56px);
+    }
+
+    .hero .subhero {
+      font-size: clamp(24px, 3vw, 40px);
+      line-height: 1.12;
+      max-width: 1120px;
+      margin-bottom: 20px;
+    }
+
+    .embed-mode .hero .subhero {
+      font-size: clamp(18px, 2.6vw, 28px);
+      margin-bottom: 14px;
+    }
+
+    .hero .intro {
+      max-width: 1080px;
+      font-size: 19px;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    .embed-mode .hero .intro {
+      max-width: none;
+      font-size: 17px;
+    }
+
+    .tagline {
+      display: inline-block;
+      margin: 0 0 18px;
+      font-family: "Roboto Mono", "SFMono-Regular", Consolas, monospace;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .term-sampler,
+    .term-curator,
+    .term-relabel {
+      border-radius: 0.3em;
+      padding: 0 0.22em;
+      color: var(--ink);
+    }
+
+    .term-sampler {
+      background: var(--sampler);
+    }
+
+    .term-curator {
+      background: var(--curator);
+    }
+
+    .term-relabel {
+      background: var(--relabel);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 2.2fr) minmax(320px, 0.95fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .card {
+      border: 1.5px solid rgba(27, 27, 27, 0.14);
+      border-radius: 18px;
+      background: linear-gradient(180deg, var(--panel-strong), var(--panel));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .card-body {
+      padding: 22px 22px 20px;
+    }
+
+    .card-title {
+      margin: 0 0 12px;
+      font-size: 26px;
+      line-height: 1.15;
+    }
+
+    .card-kicker {
+      margin: 0 0 10px;
+      font-family: "Roboto Mono", "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .playground {
+      overflow: hidden;
+    }
+
+    .sim-frame {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1.5px solid rgba(27, 27, 27, 0.11);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(248, 244, 236, 0.9));
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .sim-frame canvas {
+      touch-action: none;
+      cursor: grab;
+    }
+
+    .sim-frame canvas.dragging {
+      cursor: grabbing;
+    }
+
+    .sim-hud {
+      position: absolute;
+      inset: 18px 18px auto 18px;
+      display: grid;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .hud-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-family: "Roboto Mono", "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+      line-height: 1;
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid rgba(27, 27, 27, 0.11);
+      backdrop-filter: blur(8px);
+    }
+
+    .pill strong {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .pill.success {
+      background: rgba(204, 239, 214, 0.94);
+      border-color: rgba(43, 122, 75, 0.18);
+    }
+
+    .pill.fail {
+      background: rgba(255, 241, 238, 0.94);
+      border-color: rgba(165, 61, 45, 0.18);
+    }
+
+    .hint-card {
+      max-width: 380px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(27, 27, 27, 0.11);
+      backdrop-filter: blur(10px);
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .hint-card strong {
+      font-family: "Roboto Mono", "SFMono-Regular", Consolas, monospace;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 18px 0 10px;
+    }
+
+    .button-row button {
+      appearance: none;
+      border: 1.5px solid rgba(27, 27, 27, 0.18);
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--ink);
+      padding: 11px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+    }
+
+    .button-row button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: rgba(27, 27, 27, 0.3);
+      background: rgba(255, 255, 255, 0.98);
+    }
+
+    .button-row button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    .button-row .primary {
+      background: var(--accent);
+      color: #fdfaf4;
+      border-color: rgba(35, 57, 93, 0.9);
+    }
+
+    .button-row .primary:hover:not(:disabled) {
+      background: #2a466e;
+    }
+
+    .figure-caption {
+      margin: 10px 0 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.65;
+      font-family: "Roboto Mono", "SFMono-Regular", Consolas, monospace;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 24px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .knob-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .knob {
+      display: grid;
+      gap: 6px;
+    }
+
+    .knob-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+      font-family: "Roboto Mono", "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .knob-head strong {
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: #23395d;
+    }
+
+    .summary {
+      display: grid;
+      gap: 10px;
+      font-family: "Roboto Mono", "SFMono-Regular", Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.65;
+      color: var(--muted);
+    }
+
+    .summary strong {
+      color: var(--ink);
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .summary-stat {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(27, 27, 27, 0.08);
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .summary-stat strong {
+      display: block;
+      font-size: 17px;
+      margin-bottom: 2px;
+    }
+
+    .summary-stat span {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    pre {
+      margin: 0;
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid rgba(27, 27, 27, 0.09);
+      max-height: 320px;
+      overflow: auto;
+      font-size: 11px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .ensemble-wide {
+      margin-top: 24px;
+    }
+
+    .footer-note {
+      margin-top: 20px;
+      font-size: 16px;
+      line-height: 1.65;
+      max-width: 1100px;
+    }
+
+    .embed-mode .footer-note {
+      margin-bottom: 0;
+    }
+
+    @media (max-width: 1180px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+      }
+    }
+
+    @media (max-width: 860px) {
+      body {
+        padding: 32px 16px 44px;
+      }
+
+      .embed-mode body {
+        padding: 16px 10px 20px;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="tagline">Interactive Demo</div>
+      <h1>PGDG</h1>
+      <div class="subhero">One demonstration, then a compact recovery dataset.</div>
+      <p class="intro">
+        This standalone page turns the paper’s <span class="term-sampler">Physically Grounded Sampler</span>,
+        <span class="term-curator">Dataset Curator</span>, and <span class="term-relabel">Selective Local Relabeling</span>
+        into a direct, tactile demo. Drag the collision sphere into the upper half of the box, tip it into the right wall, and then run PGDG on the recorded motion to see Bezier control-point sampling, frontier-aware curation, diversity selection, local relabeling, and the final dataset summary.
+      </p>
+    </header>
+
+    <div class="layout">
+      <section class="card playground">
+        <div class="card-body">
+          <div class="card-kicker">Task</div>
+          <h2 class="card-title">Tip-Against-Wall Box Task</h2>
+          <div class="sim-frame">
+            <canvas id="simCanvas" width="920" height="560"></canvas>
+            <div class="sim-hud">
+              <div class="hud-row">
+                <div id="statusPill" class="pill fail"><strong>Success</strong><span>Not yet</span></div>
+                <div id="demoPill" class="pill"><strong>Demo</strong><span>Waiting for a recorded attempt</span></div>
+                <div id="pipelinePill" class="pill"><strong>Pipeline</strong><span>Idle</span></div>
+              </div>
+              <div class="hint-card">
+                <strong>How To Use</strong><br>
+                Move the sphere to the top-left of the box, push across the roofline toward the wall, and hold long enough for the box to settle near 90 degrees. Use <em>Seeded demo</em> if you want a guaranteed successful reference before sampling.
+              </div>
+            </div>
+          </div>
+          <div class="button-row">
+            <button id="resetBtn">Reset task</button>
+            <button id="clearDemoBtn">Clear recorded demo</button>
+            <button id="seedDemoBtn">Seeded demo</button>
+            <button id="runPipelineBtn" class="primary" disabled>Run PGDG pipeline</button>
+            <button id="downloadBtn" disabled>Download dataset JSON</button>
+          </div>
+          <p class="figure-caption">
+            Success predicate: the box must reach the wall and settle near a 90 degree tip. The mouse sphere is the only actuator; the rest of the page is generated from that single recorded demonstration.
+          </p>
+        </div>
+      </section>
+
+      <aside class="sidebar">
+        <section class="card">
+          <div class="card-body">
+            <div class="card-kicker">Knobs</div>
+            <h2 class="card-title">Hyperparameters</h2>
+            <div class="knob-grid" id="knobGrid">
+              <div class="knob">
+                <div class="knob-head"><strong>Iterations</strong><span id="iterationsValue">4</span></div>
+                <input id="iterations" type="range" min="2" max="6" step="1" value="4">
+              </div>
+              <div class="knob">
+                <div class="knob-head"><strong>Samples / iteration</strong><span id="samplesPerIterationValue">30</span></div>
+                <input id="samplesPerIteration" type="range" min="18" max="48" step="2" value="30">
+              </div>
+              <div class="knob">
+                <div class="knob-head"><strong>Bezier control pts</strong><span id="controlPointCountValue">5</span></div>
+                <input id="controlPointCount" type="range" min="3" max="20" step="1" value="5">
+              </div>
+              <div class="knob">
+                <div class="knob-head"><strong>Bezier noise</strong><span id="noisePxValue">26 px</span></div>
+                <input id="noisePx" type="range" min="10" max="60" step="2" value="26">
+              </div>
+              <div class="knob">
+                <div class="knob-head"><strong>Selected / iteration</strong><span id="selectedPerIterationValue">6</span></div>
+                <input id="selectedPerIteration" type="range" min="3" max="10" step="1" value="6">
+              </div>
+              <div class="knob">
+                <div class="knob-head"><strong>Relabeled chunks</strong><span id="relabelCountValue">3</span></div>
+                <input id="relabelCount" type="range" min="0" max="5" step="1" value="3">
+              </div>
+              <div class="knob">
+                <div class="knob-head"><strong>CEM horizon</strong><span id="cemHorizonValue">12</span></div>
+                <input id="cemHorizon" type="range" min="6" max="50" step="1" value="12">
+              </div>
+              <div class="knob">
+                <div class="knob-head"><strong>Tube inner quantile</strong><span id="qminValue">0.16</span></div>
+                <input id="qmin" type="range" min="0.08" max="0.30" step="0.01" value="0.16">
+              </div>
+              <div class="knob">
+                <div class="knob-head"><strong>Tube outer quantile</strong><span id="qmaxValue">0.82</span></div>
+                <input id="qmax" type="range" min="0.65" max="0.92" step="0.01" value="0.82">
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-body">
+            <div class="card-kicker">Summary</div>
+            <h2 class="card-title">Pipeline State</h2>
+            <div class="summary" id="pipelineSummary">
+              Record a successful demonstration or run the seeded one. The page will then fit a Bezier parameterization, sample rollouts in physics, keep informative successes inside the Goldilocks zone, diversify them, and relabel a few risky chunks with short-horizon search.
+            </div>
+            <div class="summary-grid" id="summaryGrid">
+              <div class="summary-stat"><strong id="summarySuccesses">0</strong><span>Successful rollouts</span></div>
+              <div class="summary-stat"><strong id="summarySelected">0</strong><span>Curated</span></div>
+              <div class="summary-stat"><strong id="summaryRelabeled">0</strong><span>Relabeled chunks</span></div>
+              <div class="summary-stat"><strong id="summaryCoverage">0.00</strong><span>Coverage score</span></div>
+            </div>
+          </div>
+        </section>
+
+      </aside>
+    </div>
+
+    <section class="card ensemble-wide">
+      <div class="card-body">
+        <div class="card-kicker">Generated Output</div>
+        <h2 class="card-title">Generated Trajectory Ensemble</h2>
+        <canvas id="ensembleCanvas" width="1360" height="350"></canvas>
+        <p class="figure-caption">
+          This direct view overlays the recorded demo with all successful generated trajectories so the generated distribution is visible at a glance.
+        </p>
+      </div>
+    </section>
+
+    <p class="footer-note">
+      The mechanics are intentionally lightweight so the whole experience stays inside one HTML file, but the control flow mirrors the paper: a single demonstration becomes a sampling distribution over Bezier control points, successful trajectories are scored in an adaptive recovery tube, DPP-style diversity selection removes redundancy, and CEM-style relabeling repairs a few risky supervision points.
+    </p>
+  </div>
+
+  <script>
+    const SIM = {
+      width: 920,
+      height: 560,
+      floorY: 462,
+      wallX: 784,
+      leftX: 94,
+      dt: 1 / 60,
+      substeps: 6,
+      gravity: 2200,
+      mouseRadius: 24,
+      mouseMaxSpeed: 1680,
+      successThreshold: 0.86,
+      parkedMouse: { x: 152, y: 408 },
+      startBoxX: 676,
+      boxW: 72,
+      boxH: 122,
+      boxMass: 3.2,
+      boxRestitution: 0.04,
+      boxFriction: 0.62
+    };
+
+    const app = {
+      sim: null,
+      latestDemo: null,
+      latestSuccessfulDemo: null,
+      currentAttempt: null,
+      pendingFinalizeFrames: 0,
+      pointer: { active: false, x: SIM.parkedMouse.x, y: SIM.parkedMouse.y },
+      autoplay: null,
+      autoResetOnNextDrag: false,
+      runningPipeline: false,
+      pipeline: null,
+      lastTime: performance.now(),
+      accumulator: 0,
+      activeTarget: { x: SIM.parkedMouse.x, y: SIM.parkedMouse.y, engaged: false }
+    };
+
+    const dom = {
+      simCanvas: document.getElementById("simCanvas"),
+      ensembleCanvas: document.getElementById("ensembleCanvas"),
+      statusPill: document.getElementById("statusPill"),
+      demoPill: document.getElementById("demoPill"),
+      pipelinePill: document.getElementById("pipelinePill"),
+      resetBtn: document.getElementById("resetBtn"),
+      clearDemoBtn: document.getElementById("clearDemoBtn"),
+      seedDemoBtn: document.getElementById("seedDemoBtn"),
+      runPipelineBtn: document.getElementById("runPipelineBtn"),
+      downloadBtn: document.getElementById("downloadBtn"),
+      pipelineSummary: document.getElementById("pipelineSummary"),
+      summarySuccesses: document.getElementById("summarySuccesses"),
+      summarySelected: document.getElementById("summarySelected"),
+      summaryRelabeled: document.getElementById("summaryRelabeled"),
+      summaryCoverage: document.getElementById("summaryCoverage")
+    };
+
+    const knobIds = [
+      "iterations",
+      "samplesPerIteration",
+      "controlPointCount",
+      "noisePx",
+      "selectedPerIteration",
+      "relabelCount",
+      "cemHorizon",
+      "qmin",
+      "qmax"
+    ];
+
+    const knobLabels = {
+      iterations: v => `${v}`,
+      samplesPerIteration: v => `${v}`,
+      controlPointCount: v => `${v}`,
+      noisePx: v => `${v} px`,
+      selectedPerIteration: v => `${v}`,
+      relabelCount: v => `${v}`,
+      cemHorizon: v => `${v}`,
+      qmin: v => Number(v).toFixed(2),
+      qmax: v => Number(v).toFixed(2)
+    };
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function easeInOut(t) {
+      return 0.5 - 0.5 * Math.cos(Math.PI * clamp(t, 0, 1));
+    }
+
+    function dist(a, b) {
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    }
+
+    function deepCloneState(state) {
+      return {
+        box: { ...state.box },
+        mouse: { ...state.mouse },
+        frame: state.frame,
+        goalScore: state.goalScore,
+        liveGoalScore: state.liveGoalScore,
+        maxGoalScore: state.maxGoalScore,
+        maxLiveGoalScore: state.maxLiveGoalScore,
+        wallTouchFrames: state.wallTouchFrames,
+        lastPose: state.lastPose ? {
+          x: state.lastPose.x,
+          y: state.lastPose.y,
+          rightmost: state.lastPose.rightmost,
+          corners: state.lastPose.corners.map(p => ({ x: p.x, y: p.y }))
+        } : null
+      };
+    }
+
+    function createRng(seed) {
+      let t = seed >>> 0;
+      return function rand() {
+        t += 0x6D2B79F5;
+        let r = Math.imul(t ^ t >>> 15, 1 | t);
+        r ^= r + Math.imul(r ^ r >>> 7, 61 | r);
+        return ((r ^ r >>> 14) >>> 0) / 4294967296;
+      };
+    }
+
+    function randNormal(rng) {
+      let u = 0;
+      let v = 0;
+      while (u === 0) u = rng();
+      while (v === 0) v = rng();
+      return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+    }
+
+    function quantile(values, q) {
+      if (!values.length) return 0;
+      const sorted = [...values].sort((a, b) => a - b);
+      const idx = clamp((sorted.length - 1) * q, 0, sorted.length - 1);
+      const lo = Math.floor(idx);
+      const hi = Math.ceil(idx);
+      if (lo === hi) return sorted[lo];
+      return lerp(sorted[lo], sorted[hi], idx - lo);
+    }
+
+    function getParams() {
+      return {
+        iterations: Number(document.getElementById("iterations").value),
+        samplesPerIteration: Number(document.getElementById("samplesPerIteration").value),
+        controlPointCount: Number(document.getElementById("controlPointCount").value),
+        noisePx: Number(document.getElementById("noisePx").value),
+        selectedPerIteration: Number(document.getElementById("selectedPerIteration").value),
+        relabelCount: Number(document.getElementById("relabelCount").value),
+        cemHorizon: Number(document.getElementById("cemHorizon").value),
+        qmin: Number(document.getElementById("qmin").value),
+        qmax: Number(document.getElementById("qmax").value)
+      };
+    }
+
+    function refreshKnobLabels() {
+      for (const id of knobIds) {
+        const input = document.getElementById(id);
+        const valueNode = document.getElementById(`${id}Value`);
+        valueNode.textContent = knobLabels[id](input.value);
+      }
+    }
+
+    function makeSimState() {
+      const startY = SIM.floorY - SIM.boxH / 2;
+      const inertia = (SIM.boxMass * (SIM.boxW * SIM.boxW + SIM.boxH * SIM.boxH)) / 12;
+      return {
+        box: {
+          x: SIM.startBoxX,
+          y: startY,
+          vx: 0,
+          vy: 0,
+          angle: 0,
+          omega: 0,
+          mass: SIM.boxMass,
+          invMass: 1 / SIM.boxMass,
+          inertia,
+          invInertia: 1 / inertia,
+          restitution: SIM.boxRestitution,
+          friction: SIM.boxFriction
+        },
+        mouse: {
+          x: SIM.parkedMouse.x,
+          y: SIM.parkedMouse.y,
+          vx: 0,
+          vy: 0,
+          radius: SIM.mouseRadius,
+          contactSlack: 0
+        },
+        frame: 0,
+        goalScore: 0,
+        liveGoalScore: 0,
+        maxGoalScore: 0,
+        maxLiveGoalScore: 0,
+        wallTouchFrames: 0,
+        lastPose: null
+      };
+    }
+
+    function localCorners(angle) {
+      const hw = SIM.boxW / 2;
+      const hh = SIM.boxH / 2;
+      const c = Math.cos(angle);
+      const s = Math.sin(angle);
+      return [
+        { x: -hw * c + hh * s, y: -hw * s - hh * c },
+        { x: hw * c + hh * s, y: hw * s - hh * c },
+        { x: hw * c - hh * s, y: hw * s + hh * c },
+        { x: -hw * c - hh * s, y: -hw * s + hh * c }
+      ];
+    }
+
+    function localToWorld(box, point) {
+      const c = Math.cos(box.angle);
+      const s = Math.sin(box.angle);
+      return {
+        x: box.x + point.x * c - point.y * s,
+        y: box.y + point.x * s + point.y * c
+      };
+    }
+
+    function worldToLocal(box, point) {
+      const c = Math.cos(box.angle);
+      const s = Math.sin(box.angle);
+      const dx = point.x - box.x;
+      const dy = point.y - box.y;
+      return {
+        x: dx * c + dy * s,
+        y: -dx * s + dy * c
+      };
+    }
+
+    function dot(a, b) {
+      return a.x * b.x + a.y * b.y;
+    }
+
+    function cross(a, b) {
+      return a.x * b.y - a.y * b.x;
+    }
+
+    function normalize(v) {
+      const n = Math.hypot(v.x, v.y);
+      if (n < 1e-8) {
+        return { x: 1, y: 0 };
+      }
+      return { x: v.x / n, y: v.y / n };
+    }
+
+    function capVector(v, maxMagnitude) {
+      const n = Math.hypot(v.x, v.y);
+      if (n <= maxMagnitude || n < 1e-8) return v;
+      return {
+        x: (v.x / n) * maxMagnitude,
+        y: (v.y / n) * maxMagnitude
+      };
+    }
+
+    function getPose(box) {
+      const corners = localCorners(box.angle);
+      let maxX = -Infinity;
+      let minX = Infinity;
+      for (const corner of corners) {
+        if (corner.x > maxX) maxX = corner.x;
+        if (corner.x < minX) minX = corner.x;
+      }
+      return {
+        x: box.x,
+        y: box.y,
+        rightmost: box.x + maxX,
+        leftmost: box.x + minX,
+        corners: corners.map(corner => ({ x: box.x + corner.x, y: box.y + corner.y }))
+      };
+    }
+
+    function closestPointOnBox(box, pose, point) {
+      const local = worldToLocal(box, point);
+      const lx = clamp(local.x, -SIM.boxW / 2, SIM.boxW / 2);
+      const ly = clamp(local.y, -SIM.boxH / 2, SIM.boxH / 2);
+      return localToWorld(box, { x: lx, y: ly });
+    }
+
+    function pointVelocity(state, point, center) {
+      const rx = point.x - center.x;
+      const ry = point.y - center.y;
+      return {
+        x: state.box.vx - state.box.omega * ry,
+        y: state.box.vy + state.box.omega * rx
+      };
+    }
+
+    function applyImpulse(box, impulse, contactPoint) {
+      const rx = contactPoint.x - box.x;
+      const ry = contactPoint.y - box.y;
+      box.vx += impulse.x * box.invMass;
+      box.vy += impulse.y * box.invMass;
+      box.omega += cross({ x: rx, y: ry }, impulse) * box.invInertia;
+    }
+
+    function resolveContact(box, contactPoint, normal, penetration, otherVelocity, frictionScale = 1) {
+      const rx = contactPoint.x - box.x;
+      const ry = contactPoint.y - box.y;
+      const r = { x: rx, y: ry };
+      const rn = cross(r, normal);
+      const kNormal = box.invMass + rn * rn * box.invInertia;
+      if (kNormal < 1e-8) return;
+
+      const correction = Math.max(0, penetration - 0.08) / kNormal;
+      box.x -= normal.x * correction * box.invMass * 0.88;
+      box.y -= normal.y * correction * box.invMass * 0.88;
+      box.angle -= rn * correction * box.invInertia * 0.88;
+
+      const vBody = {
+        x: box.vx - box.omega * ry,
+        y: box.vy + box.omega * rx
+      };
+      const relVelocity = {
+        x: otherVelocity.x - vBody.x,
+        y: otherVelocity.y - vBody.y
+      };
+      const vn = dot(relVelocity, normal);
+      if (vn >= 0) return;
+
+      const j = (-(1 + box.restitution) * vn) / kNormal;
+      const normalImpulse = {
+        x: -normal.x * j,
+        y: -normal.y * j
+      };
+      applyImpulse(box, normalImpulse, contactPoint);
+
+      const tangent = normalize({ x: -normal.y, y: normal.x });
+      const rt = cross(r, tangent);
+      const kTangent = box.invMass + rt * rt * box.invInertia;
+      if (kTangent < 1e-8) return;
+
+      const vBodyAfter = {
+        x: box.vx - box.omega * ry,
+        y: box.vy + box.omega * rx
+      };
+      const relAfter = {
+        x: otherVelocity.x - vBodyAfter.x,
+        y: otherVelocity.y - vBodyAfter.y
+      };
+      const vt = dot(relAfter, tangent);
+      const maxFriction = box.friction * frictionScale * j;
+      const jt = clamp(-vt / kTangent, -maxFriction, maxFriction);
+      const tangentImpulse = {
+        x: -tangent.x * jt,
+        y: -tangent.y * jt
+      };
+      applyImpulse(box, tangentImpulse, contactPoint);
+    }
+
+    function moveMouseKinematically(mouse, target, dt) {
+      const response = target.engaged ? 16 : 9;
+      const desiredVelocity = capVector({
+        x: (target.x - mouse.x) * response,
+        y: (target.y - mouse.y) * response
+      }, SIM.mouseMaxSpeed);
+      const nextX = mouse.x + desiredVelocity.x * dt;
+      const nextY = mouse.y + desiredVelocity.y * dt;
+      mouse.vx = (nextX - mouse.x) / dt;
+      mouse.vy = (nextY - mouse.y) / dt;
+      mouse.x = clamp(nextX, SIM.leftX + mouse.radius, SIM.wallX - mouse.radius - 1);
+      mouse.y = clamp(nextY, mouse.radius + 18, SIM.floorY - mouse.radius - 1);
+    }
+
+    function overlapsBoxAt(box, x, y, radius) {
+      return !!computeCircleBoxContact(box, { x, y, radius });
+    }
+
+    function clipMouseSegmentAgainstBox(start, end, box, radius) {
+      if (!overlapsBoxAt(box, end.x, end.y, radius)) {
+        return { x: end.x, y: end.y };
+      }
+      if (overlapsBoxAt(box, start.x, start.y, radius)) {
+        return { x: start.x, y: start.y };
+      }
+      let lo = 0;
+      let hi = 1;
+      let safe = { x: start.x, y: start.y };
+      for (let i = 0; i < 18; i += 1) {
+        const mid = (lo + hi) * 0.5;
+        const test = {
+          x: lerp(start.x, end.x, mid),
+          y: lerp(start.y, end.y, mid)
+        };
+        if (overlapsBoxAt(box, test.x, test.y, radius)) {
+          hi = mid;
+        } else {
+          lo = mid;
+          safe = test;
+        }
+      }
+      return safe;
+    }
+
+    function moveMouseWithCutoff(mouse, target, dt, box) {
+      const start = { x: mouse.x, y: mouse.y };
+      moveMouseKinematically(mouse, target, dt);
+      const unclipped = { x: mouse.x, y: mouse.y };
+      const clipped = clipMouseSegmentAgainstBox(start, unclipped, box, mouse.radius);
+      mouse.contactSlack = Math.min(3, Math.hypot(unclipped.x - clipped.x, unclipped.y - clipped.y));
+      mouse.vx = (clipped.x - start.x) / dt;
+      mouse.vy = (clipped.y - start.y) / dt;
+      mouse.x = clipped.x;
+      mouse.y = clipped.y;
+      return start;
+    }
+
+    function computeCircleBoxContact(box, mouse) {
+      const localMouse = worldToLocal(box, mouse);
+      const hw = SIM.boxW / 2;
+      const hh = SIM.boxH / 2;
+      const inside = Math.abs(localMouse.x) <= hw && Math.abs(localMouse.y) <= hh;
+      if (inside) {
+        const dx = hw - Math.abs(localMouse.x);
+        const dy = hh - Math.abs(localMouse.y);
+        let normalLocal;
+        let contactLocal;
+        let penetration;
+        if (dx < dy) {
+          normalLocal = { x: localMouse.x >= 0 ? 1 : -1, y: 0 };
+          contactLocal = { x: hw * normalLocal.x, y: localMouse.y };
+          penetration = mouse.radius + dx;
+        } else {
+          normalLocal = { x: 0, y: localMouse.y >= 0 ? 1 : -1 };
+          contactLocal = { x: localMouse.x, y: hh * normalLocal.y };
+          penetration = mouse.radius + dy;
+        }
+        const normalWorld = normalize(localToWorld({ ...box, x: 0, y: 0 }, normalLocal));
+        return {
+          contactPoint: localToWorld(box, contactLocal),
+          normal: normalWorld,
+          penetration,
+          inside: true
+        };
+      }
+
+      const clamped = {
+        x: clamp(localMouse.x, -hw, hw),
+        y: clamp(localMouse.y, -hh, hh)
+      };
+      const deltaLocal = {
+        x: localMouse.x - clamped.x,
+        y: localMouse.y - clamped.y
+      };
+      const distanceToBox = Math.hypot(deltaLocal.x, deltaLocal.y);
+      if (distanceToBox >= mouse.radius) return null;
+      const normalLocal = distanceToBox > 1e-8
+        ? { x: deltaLocal.x / distanceToBox, y: deltaLocal.y / distanceToBox }
+        : { x: -1, y: 0 };
+      const normalWorld = normalize(localToWorld({ ...box, x: 0, y: 0 }, normalLocal));
+      return {
+        contactPoint: localToWorld(box, clamped),
+        normal: normalWorld,
+        penetration: mouse.radius - distanceToBox,
+        inside: false
+      };
+    }
+
+    function solveStaticContacts(state) {
+      const pose = getPose(state.box);
+      const floorContacts = [];
+      const rightWallContacts = [];
+      const leftWallContacts = [];
+      for (const corner of pose.corners) {
+        if (corner.y > SIM.floorY) {
+          floorContacts.push({
+            point: corner,
+            normal: { x: 0, y: 1 },
+            penetration: corner.y - SIM.floorY
+          });
+        }
+        if (corner.x > SIM.wallX) {
+          rightWallContacts.push({
+            point: corner,
+            normal: { x: 1, y: 0 },
+            penetration: corner.x - SIM.wallX
+          });
+        }
+        if (corner.x < SIM.leftX) {
+          leftWallContacts.push({
+            point: corner,
+            normal: { x: -1, y: 0 },
+            penetration: SIM.leftX - corner.x
+          });
+        }
+      }
+
+      floorContacts.sort((a, b) => b.penetration - a.penetration);
+      rightWallContacts.sort((a, b) => b.penetration - a.penetration);
+      leftWallContacts.sort((a, b) => b.penetration - a.penetration);
+
+      for (const contact of floorContacts.slice(0, 2)) {
+        resolveContact(state.box, contact.point, contact.normal, contact.penetration, { x: 0, y: 0 }, 1);
+      }
+      for (const contact of rightWallContacts.slice(0, 2)) {
+        state.wallTouchFrames += 1;
+        resolveContact(state.box, contact.point, contact.normal, contact.penetration, { x: 0, y: 0 }, 0.65);
+      }
+      for (const contact of leftWallContacts.slice(0, 2)) {
+        resolveContact(state.box, contact.point, contact.normal, contact.penetration, { x: 0, y: 0 }, 0.65);
+      }
+    }
+
+    function clampBoxAgainstWorld(box) {
+      let pose = getPose(box);
+      let touchedWall = false;
+      if (pose.rightmost > SIM.wallX) {
+        box.x -= pose.rightmost - SIM.wallX;
+        box.vx = Math.min(box.vx, 0);
+        box.omega *= 0.82;
+        pose = getPose(box);
+        touchedWall = true;
+      }
+      if (pose.leftmost < SIM.leftX) {
+        box.x += SIM.leftX - pose.leftmost;
+        box.vx = Math.max(box.vx, 0);
+        box.omega *= 0.82;
+      }
+      return touchedWall;
+    }
+
+    function computeGoalScore(state, pose) {
+      const angleDeg = state.box.angle * 180 / Math.PI;
+      const wallFactor = clamp((pose.rightmost - (SIM.wallX - 20)) / 20, 0, 1);
+      const angleFactor = clamp(1 - Math.abs(angleDeg - 90) / 18, 0, 1);
+      const stabilityFactor = clamp(1 - Math.abs(state.box.omega) / 2.4, 0.15, 1);
+      return clamp(angleFactor * (0.78 + 0.22 * wallFactor) * stabilityFactor, 0, 1);
+    }
+
+    function computeLiveGoalScore(state, pose) {
+      const angleDeg = state.box.angle * 180 / Math.PI;
+      const wallFactor = clamp((pose.rightmost - (SIM.wallX - 28)) / 28, 0, 1);
+      const angleFactor = clamp(1 - Math.abs(angleDeg - 90) / 24, 0, 1);
+      const angularSpeedFactor = clamp(1 - Math.abs(state.box.omega) / 4.5, 0.3, 1);
+      return clamp(angleFactor * (0.7 + 0.3 * wallFactor) * angularSpeedFactor, 0, 1);
+    }
+
+    function isSuccessfulState(state) {
+      const pose = state.lastPose || getPose(state.box);
+      const angleDeg = state.box.angle * 180 / Math.PI;
+      return computeGoalScore(state, pose) >= SIM.successThreshold &&
+        angleDeg >= 79 &&
+        angleDeg <= 102 &&
+        pose.rightmost >= SIM.wallX - 20 &&
+        Math.abs(state.box.omega) < 1.2;
+    }
+
+    function stepSimulation(state, target) {
+      const subDt = SIM.dt / SIM.substeps;
+      for (let step = 0; step < SIM.substeps; step += 1) {
+        const mouseStart = moveMouseWithCutoff(state.mouse, target, subDt, state.box);
+
+        state.box.vy += SIM.gravity * subDt;
+        state.box.x += state.box.vx * subDt;
+        state.box.y += state.box.vy * subDt;
+        state.box.angle += state.box.omega * subDt;
+
+        for (let iter = 0; iter < 5; iter += 1) {
+          solveStaticContacts(state);
+          const sphereContact = computeCircleBoxContact(state.box, {
+            x: state.mouse.x,
+            y: state.mouse.y,
+            radius: state.mouse.radius + state.mouse.contactSlack
+          });
+          if (sphereContact) {
+            resolveContact(
+              state.box,
+              sphereContact.contactPoint,
+              sphereContact.normal,
+              sphereContact.penetration,
+              { x: state.mouse.vx, y: state.mouse.vy },
+              0.9
+            );
+          }
+          if (clampBoxAgainstWorld(state.box)) {
+            state.wallTouchFrames += 1;
+          }
+        }
+
+        if (clampBoxAgainstWorld(state.box)) {
+          state.wallTouchFrames += 1;
+        }
+
+        const clippedAfterSolve = clipMouseSegmentAgainstBox(
+          mouseStart,
+          { x: state.mouse.x, y: state.mouse.y },
+          state.box,
+          state.mouse.radius
+        );
+        state.mouse.vx = (clippedAfterSolve.x - mouseStart.x) / subDt;
+        state.mouse.vy = (clippedAfterSolve.y - mouseStart.y) / subDt;
+        state.mouse.x = clippedAfterSolve.x;
+        state.mouse.y = clippedAfterSolve.y;
+        if (state.mouse.contactSlack < 0.02) state.mouse.contactSlack = 0;
+
+        state.box.vx *= 0.9975;
+        state.box.vy *= 0.9992;
+        state.box.omega *= 0.996;
+      }
+
+      const resolvedPose = getPose(state.box);
+      state.lastPose = resolvedPose;
+      state.goalScore = computeGoalScore(state, resolvedPose);
+      state.liveGoalScore = computeLiveGoalScore(state, resolvedPose);
+      state.maxGoalScore = Math.max(state.maxGoalScore, state.goalScore);
+      state.maxLiveGoalScore = Math.max(state.maxLiveGoalScore, state.liveGoalScore);
+      state.frame += 1;
+    }
+
+    function resetTask(options = {}) {
+      app.sim = makeSimState();
+      app.pointer.active = false;
+      app.pointer.x = SIM.parkedMouse.x;
+      app.pointer.y = SIM.parkedMouse.y;
+      app.pendingFinalizeFrames = 0;
+      app.currentAttempt = null;
+      app.autoplay = null;
+      app.autoResetOnNextDrag = false;
+      app.activeTarget = { x: SIM.parkedMouse.x, y: SIM.parkedMouse.y, engaged: false };
+      if (options.clearPipeline) {
+        app.pipeline = null;
+      }
+      updateUI();
+      redrawAllPanels();
+    }
+
+    function clearRecordedDemo() {
+      app.latestDemo = null;
+      app.latestSuccessfulDemo = null;
+      app.pipeline = null;
+      app.autoResetOnNextDrag = false;
+      dom.pipelineSummary.innerHTML = formatSummary([
+        `Record a successful demonstration or run the seeded one.`,
+        `The page will then fit a Bezier parameterization, sample rollouts in physics, keep informative successes inside the Goldilocks zone, diversify them, and relabel a few risky chunks with short-horizon search.`
+      ]);
+      updateSummaryStats();
+      updateUI();
+      redrawAllPanels();
+    }
+
+    function startAttempt(source) {
+      app.currentAttempt = {
+        source,
+        mousePath: [],
+        commandPath: [],
+        boxStates: [],
+        snapshots: [],
+        controlActiveFrames: 0
+      };
+    }
+
+    function recordAttemptFrame(commandActive) {
+      if (!app.currentAttempt) return;
+      const pose = app.sim.lastPose || getPose(app.sim.box);
+      app.currentAttempt.mousePath.push({
+        x: app.sim.mouse.x,
+        y: app.sim.mouse.y
+      });
+      if (commandActive) {
+        app.currentAttempt.commandPath.push({
+          x: app.sim.mouse.x,
+          y: app.sim.mouse.y
+        });
+        app.currentAttempt.controlActiveFrames += 1;
+      }
+      app.currentAttempt.boxStates.push({
+        x: pose.x,
+        y: pose.y,
+        angle: app.sim.box.angle,
+        goal: app.sim.goalScore,
+        liveGoal: app.sim.liveGoalScore
+      });
+      app.currentAttempt.snapshots.push(deepCloneState(app.sim));
+    }
+
+    function smoothPath(path) {
+      if (path.length < 3) return path.slice();
+      return path.map((point, index) => {
+        const prev = path[Math.max(0, index - 1)];
+        const next = path[Math.min(path.length - 1, index + 1)];
+        return {
+          x: (prev.x + point.x * 2 + next.x) / 4,
+          y: (prev.y + point.y * 2 + next.y) / 4
+        };
+      });
+    }
+
+    function smoothPathIterations(path, iterations = 1) {
+      if (path.length < 3) return path.slice();
+      let result = path.map(point => ({ ...point }));
+      const start = { ...path[0] };
+      const end = { ...path[path.length - 1] };
+      for (let iter = 0; iter < iterations; iter += 1) {
+        result = smoothPath(result);
+        result[0] = { ...start };
+        result[result.length - 1] = { ...end };
+      }
+      return result;
+    }
+
+    function cumulativeLengths(path) {
+      const lengths = [0];
+      let total = 0;
+      for (let i = 1; i < path.length; i += 1) {
+        total += dist(path[i - 1], path[i]);
+        lengths.push(total);
+      }
+      return lengths;
+    }
+
+    function sampleAlongPath(path, lengths, t) {
+      if (path.length === 1) return { ...path[0] };
+      const total = lengths[lengths.length - 1];
+      const target = total * clamp(t, 0, 1);
+      let index = 1;
+      while (index < lengths.length && lengths[index] < target) index += 1;
+      if (index >= lengths.length) return { ...path[path.length - 1] };
+      const start = path[index - 1];
+      const end = path[index];
+      const span = Math.max(1e-6, lengths[index] - lengths[index - 1]);
+      const localT = (target - lengths[index - 1]) / span;
+      return {
+        x: lerp(start.x, end.x, localT),
+        y: lerp(start.y, end.y, localT)
+      };
+    }
+
+    function resamplePath(path, count) {
+      if (!path.length) return [];
+      if (path.length === 1) return Array.from({ length: count }, () => ({ ...path[0] }));
+      const lengths = cumulativeLengths(path);
+      return Array.from({ length: count }, (_, index) => sampleAlongPath(path, lengths, count === 1 ? 0 : index / (count - 1)));
+    }
+
+    function buildControlPoints(path, count = 5) {
+      const smoothed = resamplePath(smoothPath(path), 120);
+      const clampedCount = Math.max(3, Math.round(count));
+      const fractions = clampedCount === 5
+        ? [0, 0.18, 0.45, 0.72, 1]
+        : Array.from({ length: clampedCount }, (_, index) => index / (clampedCount - 1));
+      return fractions.map(t => sampleAlongPath(smoothed, cumulativeLengths(smoothed), t));
+    }
+
+    function fitBezierParameterization(commandPath, controlPointCount) {
+      const controlPoints = buildControlPoints(commandPath, controlPointCount);
+      const bezierSamples = Array.from({ length: 80 }, (_, index) =>
+        evaluateBezier(controlPoints, index / 79)
+      );
+      return { controlPoints, bezierSamples };
+    }
+
+    function rebuildDemoParameterization(demo, controlPointCount) {
+      if (!demo) return null;
+      const fitted = fitBezierParameterization(demo.commandPath, controlPointCount);
+      return {
+        ...demo,
+        controlPoints: fitted.controlPoints,
+        bezierSamples: fitted.bezierSamples
+      };
+    }
+
+    function refitStoredDemos() {
+      const controlPointCount = getParams().controlPointCount;
+      const latestDemoRef = app.latestDemo;
+      const latestSuccessfulDemoRef = app.latestSuccessfulDemo;
+      const rebuiltLatestDemo = rebuildDemoParameterization(latestDemoRef, controlPointCount);
+      const rebuiltLatestSuccessfulDemo = latestSuccessfulDemoRef === latestDemoRef
+        ? rebuiltLatestDemo
+        : rebuildDemoParameterization(latestSuccessfulDemoRef, controlPointCount);
+
+      app.latestDemo = rebuiltLatestDemo;
+      app.latestSuccessfulDemo = rebuiltLatestSuccessfulDemo;
+      app.pipeline = null;
+      updateSummaryStats();
+      updateUI();
+      redrawAllPanels();
+    }
+
+    function evaluateBezier(controlPoints, t) {
+      let points = controlPoints.map(point => ({ ...point }));
+      const u = clamp(t, 0, 1);
+      for (let level = controlPoints.length - 1; level > 0; level -= 1) {
+        for (let i = 0; i < level; i += 1) {
+          points[i] = {
+            x: lerp(points[i].x, points[i + 1].x, u),
+            y: lerp(points[i].y, points[i + 1].y, u)
+          };
+        }
+      }
+      return points[0];
+    }
+
+    function finalizeAttempt() {
+      if (!app.currentAttempt || app.currentAttempt.commandPath.length < 12) {
+        app.currentAttempt = null;
+        app.pendingFinalizeFrames = 0;
+        app.autoResetOnNextDrag = true;
+        updateUI();
+        return;
+      }
+
+      const commandPath = smoothPath(app.currentAttempt.commandPath);
+      const fitted = fitBezierParameterization(commandPath, getParams().controlPointCount);
+      const success = app.currentAttempt.boxStates.some(state => state.liveGoal >= 0.82 || state.goal >= SIM.successThreshold);
+      const maxGoalScore = Math.max(...app.currentAttempt.boxStates.map(state => state.goal));
+      const demo = {
+        source: app.currentAttempt.source,
+        success,
+        maxGoalScore,
+        controlPoints: fitted.controlPoints,
+        commandPath,
+        bezierSamples: fitted.bezierSamples,
+        mousePath: app.currentAttempt.mousePath.slice(),
+        boxStates: app.currentAttempt.boxStates.slice(),
+        expertTrajectory: resampleStateSequence(app.currentAttempt.boxStates, 96),
+        horizon: app.currentAttempt.controlActiveFrames + 20
+      };
+
+      app.latestDemo = demo;
+      if (success) app.latestSuccessfulDemo = demo;
+      app.currentAttempt = null;
+      app.pendingFinalizeFrames = 0;
+      app.autoResetOnNextDrag = true;
+      updateUI();
+      redrawAllPanels();
+    }
+
+    function seededPolicy(frame, simState) {
+      if (frame < 50) {
+        return { x: 640 + frame * 2, y: 360 - frame * 1.1, engaged: true };
+      }
+      if (frame < 130) {
+        return { x: 760, y: 330, engaged: true };
+      }
+      if (frame < 220) {
+        return { x: 760, y: 290, engaged: true };
+      }
+      return { x: 756, y: 320, engaged: true };
+    }
+
+    function yieldToBrowser() {
+      return new Promise(resolve => {
+        requestAnimationFrame(() => resolve());
+      });
+    }
+
+    function beginSeededDemo() {
+      if (app.runningPipeline) return;
+      resetTask({ clearPipeline: false });
+      startAttempt("seeded");
+      app.autoplay = {
+        frame: 0,
+        totalFrames: 250
+      };
+      updateUI();
+    }
+
+    function getCanvasPoint(event) {
+      const rect = dom.simCanvas.getBoundingClientRect();
+      return {
+        x: ((event.clientX - rect.left) / rect.width) * dom.simCanvas.width,
+        y: ((event.clientY - rect.top) / rect.height) * dom.simCanvas.height
+      };
+    }
+
+    function resampleStateSequence(states, count) {
+      if (!states.length) return [];
+      if (states.length === 1) return Array.from({ length: count }, () => ({ ...states[0] }));
+      return Array.from({ length: count }, (_, index) => {
+        const t = count === 1 ? 0 : (index / (count - 1)) * (states.length - 1);
+        const lo = Math.floor(t);
+        const hi = Math.min(states.length - 1, Math.ceil(t));
+        const local = t - lo;
+        const a = states[lo];
+        const b = states[hi];
+        return {
+          x: lerp(a.x, b.x, local),
+          y: lerp(a.y, b.y, local),
+          angle: lerp(a.angle, b.angle, local),
+          goal: lerp(a.goal || 0, b.goal || 0, local)
+        };
+      });
+    }
+
+    function expertDistance(state, expert) {
+      const dx = (state.x - expert.x) / SIM.width;
+      const dy = (state.y - expert.y) / SIM.height;
+      const da = (state.angle - expert.angle) / 1.55;
+      return Math.sqrt(dx * dx + dy * dy + da * da);
+    }
+
+    function computeDeviationSeries(trajectory, expertTrajectory) {
+      const resampled = resampleStateSequence(trajectory.boxStates, 96);
+      return resampled.map(state => {
+        let best = Infinity;
+        for (const expert of expertTrajectory) {
+          const d = expertDistance(state, expert);
+          if (d < best) best = d;
+        }
+        return best;
+      });
+    }
+
+    function rolloutFromControlPoints(controlPoints, demo, params) {
+      const state = makeSimState();
+      state.mouse.x = controlPoints[0].x;
+      state.mouse.y = controlPoints[0].y;
+      state.lastPose = getPose(state.box);
+      const actionFrames = Math.max(90, Math.min(260, demo.horizon));
+      const settleFrames = 20;
+      const totalFrames = actionFrames + settleFrames;
+      const mousePath = [];
+      const boxStates = [];
+      const snapshots = [];
+      let success = false;
+      let maxGoalScore = 0;
+      for (let frame = 0; frame < totalFrames; frame += 1) {
+        const target = frame < actionFrames
+          ? evaluateBezier(controlPoints, easeInOut(frame / Math.max(1, actionFrames - 1)))
+          : controlPoints[controlPoints.length - 1];
+        stepSimulation(state, { x: target.x, y: target.y, engaged: true });
+        const pose = state.lastPose || getPose(state.box);
+        maxGoalScore = Math.max(maxGoalScore, state.goalScore);
+        success = success || state.goalScore >= SIM.successThreshold;
+        mousePath.push({ x: state.mouse.x, y: state.mouse.y });
+        boxStates.push({
+          x: pose.x,
+          y: pose.y,
+          angle: state.box.angle,
+          goal: state.goalScore
+        });
+        snapshots.push(deepCloneState(state));
+      }
+
+      const deviationSeries = computeDeviationSeries({ boxStates }, demo.expertTrajectory);
+      return {
+        controlPoints: controlPoints.map(point => ({ ...point })),
+        mousePath,
+        boxStates,
+        snapshots,
+        deviationSeries,
+        peakDeviation: Math.max(...deviationSeries),
+        maxGoalScore,
+        success
+      };
+    }
+
+    function bandScore(distanceValue, rmin, rmax) {
+      if (distanceValue < rmin) {
+        return rmin > 1e-6 ? distanceValue / rmin : 0;
+      }
+      if (distanceValue <= rmax) {
+        return 1;
+      }
+      const tail = Math.max(1e-6, rmax * 0.85);
+      return clamp(1 - (distanceValue - rmax) / tail, 0, 1);
+    }
+
+    function computeCurationReward(rollout, tube) {
+      const score = rollout.deviationSeries.reduce((sum, value) => sum + bandScore(value, tube.rmin, tube.rmax), 0) / rollout.deviationSeries.length;
+      return score * (0.45 + 0.55 * rollout.maxGoalScore);
+    }
+
+    function dct1d(values, keep) {
+      const result = [];
+      const n = values.length;
+      for (let k = 1; k <= keep; k += 1) {
+        let sum = 0;
+        for (let i = 0; i < n; i += 1) {
+          sum += values[i] * Math.cos(Math.PI / n * (i + 0.5) * k);
+        }
+        result.push(sum / n);
+      }
+      return result;
+    }
+
+    function computeEmbedding(rollout) {
+      const seq = resampleStateSequence(rollout.boxStates, 48);
+      const mouse = resamplePath(rollout.mousePath, 48);
+      const xs = seq.map(point => point.x / SIM.width);
+      const ys = seq.map(point => point.y / SIM.height);
+      const angles = seq.map(point => point.angle / 1.55);
+      const mx = mouse.map(point => point.x / SIM.width);
+      const my = mouse.map(point => point.y / SIM.height);
+      const embedding = [
+        ...dct1d(xs, 3),
+        ...dct1d(ys, 3),
+        ...dct1d(angles, 3),
+        ...dct1d(mx, 3),
+        ...dct1d(my, 3)
+      ];
+      rollout.embedding = embedding;
+      rollout.embedding2d = { x: embedding[0], y: embedding[3] };
+      return embedding;
+    }
+
+    function embeddingDistanceSquared(a, b) {
+      let sum = 0;
+      for (let i = 0; i < a.length; i += 1) {
+        const d = a[i] - b[i];
+        sum += d * d;
+      }
+      return sum;
+    }
+
+    function matrixLogDet(matrix) {
+      const n = matrix.length;
+      if (!n) return 0;
+      const m = matrix.map(row => row.slice());
+      let logDet = 0;
+      for (let i = 0; i < n; i += 1) {
+        let pivot = i;
+        for (let j = i + 1; j < n; j += 1) {
+          if (Math.abs(m[j][i]) > Math.abs(m[pivot][i])) pivot = j;
+        }
+        if (Math.abs(m[pivot][i]) < 1e-10) {
+          return -Infinity;
+        }
+        if (pivot !== i) {
+          const tmp = m[i];
+          m[i] = m[pivot];
+          m[pivot] = tmp;
+        }
+        const diag = m[i][i];
+        logDet += Math.log(Math.abs(diag));
+        for (let j = i + 1; j < n; j += 1) {
+          const factor = m[j][i] / diag;
+          for (let k = i; k < n; k += 1) {
+            m[j][k] -= factor * m[i][k];
+          }
+        }
+      }
+      return logDet;
+    }
+
+    function selectDiverseSubset(pool, count) {
+      if (!pool.length) return [];
+      pool.forEach(computeEmbedding);
+      const sigma = 0.04;
+      const quality = pool.map(rollout => 0.3 + rollout.reward);
+      const kernel = pool.map((rowRollout, i) =>
+        pool.map((colRollout, j) => {
+          const distSq = embeddingDistanceSquared(rowRollout.embedding, colRollout.embedding);
+          const similarity = Math.exp(-distSq / (2 * sigma * sigma));
+          return quality[i] * quality[j] * similarity;
+        })
+      );
+
+      const selected = [];
+      const chosen = new Set();
+      while (selected.length < Math.min(count, pool.length)) {
+        let bestIndex = -1;
+        let bestScore = -Infinity;
+        for (let candidate = 0; candidate < pool.length; candidate += 1) {
+          if (chosen.has(candidate)) continue;
+          const indices = [...selected.map(item => item.index), candidate];
+          const matrix = indices.map(i =>
+            indices.map(j => kernel[i][j] + (i === j ? 1e-4 : 0))
+          );
+          const score = matrixLogDet(matrix);
+          if (score > bestScore) {
+            bestScore = score;
+            bestIndex = candidate;
+          }
+        }
+        if (bestIndex === -1) break;
+        chosen.add(bestIndex);
+        selected.push({ index: bestIndex, rollout: pool[bestIndex], logDet: bestScore });
+      }
+      return selected.map((item, rank) => {
+        item.rollout.selectionRank = rank + 1;
+        return item.rollout;
+      });
+    }
+
+    function updateDistribution(selected, previousMean, demo, params) {
+      if (!selected.length) {
+        return {
+          mean: previousMean.map(point => ({ ...point })),
+          std: previousMean.map((_, index) => ({
+            x: index === 0 || index === previousMean.length - 1 ? 4 : Math.max(10, params.noisePx * 0.45),
+            y: index === 0 || index === previousMean.length - 1 ? 4 : Math.max(10, params.noisePx * 0.45)
+          }))
+        };
+      }
+      const weights = selected.map(rollout => 0.2 + rollout.reward * rollout.reward);
+      const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+      const mean = previousMean.map((_, index) => {
+        const x = selected.reduce((sum, rollout, idx) => sum + rollout.controlPoints[index].x * weights[idx], 0) / totalWeight;
+        const y = selected.reduce((sum, rollout, idx) => sum + rollout.controlPoints[index].y * weights[idx], 0) / totalWeight;
+        return { x, y };
+      });
+      mean[0] = { ...demo.controlPoints[0] };
+      mean[mean.length - 1] = { ...demo.controlPoints[demo.controlPoints.length - 1] };
+      const std = mean.map((_, index) => {
+        if (index === 0 || index === mean.length - 1) {
+          return { x: 4, y: 4 };
+        }
+        const sx = Math.sqrt(selected.reduce((sum, rollout, idx) => {
+          const d = rollout.controlPoints[index].x - mean[index].x;
+          return sum + weights[idx] * d * d;
+        }, 0) / totalWeight);
+        const sy = Math.sqrt(selected.reduce((sum, rollout, idx) => {
+          const d = rollout.controlPoints[index].y - mean[index].y;
+          return sum + weights[idx] * d * d;
+        }, 0) / totalWeight);
+        return {
+          x: clamp(sx + params.noisePx * 0.18, 8, params.noisePx * 1.2),
+          y: clamp(sy + params.noisePx * 0.18, 8, params.noisePx * 1.2)
+        };
+      });
+      return { mean, std };
+    }
+
+    function sampleControlPoints(mean, std, rng) {
+      return mean.map((point, index) => {
+        if (index === 0 || index === mean.length - 1) {
+          return { ...point };
+        }
+        return {
+          x: point.x + randNormal(rng) * std[index].x,
+          y: point.y + randNormal(rng) * std[index].y
+        };
+      });
+    }
+
+    function tubePenalty(distances, tube) {
+      return distances.reduce((sum, value) => sum + Math.max(0, value - tube.rmax), 0) / distances.length;
+    }
+
+    function simulateFromSnapshot(snapshot, actionChunk, referenceMousePath, demo, startFrame) {
+      const state = deepCloneState(snapshot);
+      const mousePath = [];
+      const boxStates = [];
+      for (let i = 0; i < actionChunk.length; i += 1) {
+        stepSimulation(state, { x: actionChunk[i].x, y: actionChunk[i].y, engaged: true });
+        const pose = state.lastPose || getPose(state.box);
+        mousePath.push({ x: state.mouse.x, y: state.mouse.y });
+        boxStates.push({ x: pose.x, y: pose.y, angle: state.box.angle, goal: state.goalScore });
+      }
+      for (let i = startFrame + actionChunk.length; i < referenceMousePath.length; i += 1) {
+        const target = referenceMousePath[i];
+        stepSimulation(state, { x: target.x, y: target.y, engaged: true });
+        const pose = state.lastPose || getPose(state.box);
+        mousePath.push({ x: state.mouse.x, y: state.mouse.y });
+        boxStates.push({ x: pose.x, y: pose.y, angle: state.box.angle, goal: state.goalScore });
+      }
+      const deviationSeries = computeDeviationSeries({ boxStates }, demo.expertTrajectory);
+      const maxGoalScore = Math.max(...boxStates.map(point => point.goal));
+      return {
+        mousePath,
+        boxStates,
+        deviationSeries,
+        maxGoalScore,
+        success: boxStates.some(point => point.goal >= SIM.successThreshold)
+      };
+    }
+
+    function buildRelabelKnotIndices(horizon, knotCount) {
+      const count = Math.max(3, Math.min(knotCount, horizon));
+      return Array.from({ length: count }, (_, index) =>
+        Math.round(index * (horizon - 1) / Math.max(1, count - 1))
+      );
+    }
+
+    function expandRelabelOffsets(knotOffsets, horizon) {
+      const knotIndices = buildRelabelKnotIndices(horizon, knotOffsets.length);
+      const expanded = [];
+      for (let frame = 0; frame < horizon; frame += 1) {
+        let segment = 0;
+        while (segment < knotIndices.length - 2 && frame > knotIndices[segment + 1]) segment += 1;
+        const leftIndex = knotIndices[segment];
+        const rightIndex = knotIndices[Math.min(knotIndices.length - 1, segment + 1)];
+        const left = knotOffsets[segment];
+        const right = knotOffsets[Math.min(knotOffsets.length - 1, segment + 1)];
+        const t = rightIndex === leftIndex ? 0 : (frame - leftIndex) / (rightIndex - leftIndex);
+        expanded.push({
+          x: lerp(left.x, right.x, clamp(t, 0, 1)),
+          y: lerp(left.y, right.y, clamp(t, 0, 1))
+        });
+      }
+      return expanded;
+    }
+
+    function buildSmoothRelabelChunk(referenceChunk, knotOffsets) {
+      const offsets = expandRelabelOffsets(knotOffsets, referenceChunk.length);
+      const raw = referenceChunk.map((point, index) => ({
+        x: point.x + offsets[index].x,
+        y: point.y + offsets[index].y
+      }));
+      const smoothed = smoothPathIterations(raw, 2);
+      smoothed[0] = {
+        x: lerp(referenceChunk[0].x, smoothed[0].x, 0.18),
+        y: lerp(referenceChunk[0].y, smoothed[0].y, 0.18)
+      };
+      smoothed[smoothed.length - 1] = {
+        x: lerp(referenceChunk[referenceChunk.length - 1].x, smoothed[smoothed.length - 1].x, 0.32),
+        y: lerp(referenceChunk[referenceChunk.length - 1].y, smoothed[smoothed.length - 1].y, 0.32)
+      };
+      return smoothed;
+    }
+
+    function relabelSmoothnessPenalty(path) {
+      if (path.length < 3) return 0;
+      let sum = 0;
+      for (let i = 1; i < path.length - 1; i += 1) {
+        const ddx = path[i + 1].x - 2 * path[i].x + path[i - 1].x;
+        const ddy = path[i + 1].y - 2 * path[i].y + path[i - 1].y;
+        sum += ddx * ddx + ddy * ddy;
+      }
+      return sum / (path.length - 2);
+    }
+
+    function averagePathDifference(a, b) {
+      const n = Math.min(a.length, b.length);
+      if (!n) return 0;
+      let sum = 0;
+      for (let i = 0; i < n; i += 1) {
+        sum += dist(a[i], b[i]);
+      }
+      return sum / n;
+    }
+
+    function localPeakDeviation(continuation, horizon) {
+      if (!continuation.deviationSeries.length) return 0;
+      return Math.max(...continuation.deviationSeries.slice(0, Math.min(horizon, continuation.deviationSeries.length)));
+    }
+
+    function scoreRelabelOutcome(continuation, referenceChunk, chunk, tube, baseline, horizon, offsetNorm) {
+      const penalty = tubePenalty(continuation.deviationSeries, tube);
+      const localPeak = localPeakDeviation(continuation, horizon);
+      const smoothPenalty = relabelSmoothnessPenalty(chunk);
+      const avgChange = averagePathDifference(referenceChunk, chunk);
+      const trivialityPenalty = Math.max(0, 14 - avgChange) * 0.08;
+      const overshootPenalty = Math.max(0, avgChange - 82) * 0.006;
+      const changeReward = clamp((avgChange - 14) / 18, 0, 1) * 0.28;
+      const goalImprovement = continuation.maxGoalScore - baseline.maxGoalScore;
+      const peakImprovement = baseline.localPeak - localPeak;
+      const tubeImprovement = baseline.penalty - penalty;
+      const successImprovement = (continuation.success ? 1 : 0) - (baseline.success ? 1 : 0);
+      return {
+        penalty,
+        smoothPenalty,
+        avgChange,
+        localPeak,
+        goalImprovement,
+        peakImprovement,
+        score:
+          continuation.maxGoalScore * 0.9 +
+          goalImprovement * 1.8 +
+          peakImprovement * 5.2 +
+          tubeImprovement * 2.2 +
+          successImprovement * 0.9 -
+          penalty * 0.16 -
+          smoothPenalty * 0.00011 -
+          offsetNorm * 0.00006 +
+          changeReward -
+          trivialityPenalty -
+          overshootPenalty
+      };
+    }
+
+    function relabelWithCem(candidate, tube, demo, params, rng) {
+      const horizon = Math.min(params.cemHorizon, candidate.rollout.mousePath.length - candidate.frame - 4);
+      if (horizon < 4) return null;
+      const referenceChunk = candidate.rollout.mousePath.slice(candidate.frame, candidate.frame + horizon);
+      const knotCount = Math.max(4, Math.min(6, Math.round(horizon / 9)));
+      let mean = Array.from({ length: knotCount }, () => ({ x: 0, y: 0 }));
+      let std = Array.from({ length: knotCount }, (_, index) => ({
+        x: index === 0 || index === knotCount - 1 ? 6 : 28,
+        y: index === 0 || index === knotCount - 1 ? 6 : 28
+      }));
+      const baselineContinuation = simulateFromSnapshot(
+        candidate.rollout.snapshots[candidate.frame],
+        referenceChunk,
+        candidate.rollout.mousePath,
+        demo,
+        candidate.frame
+      );
+      const baseline = {
+        penalty: tubePenalty(baselineContinuation.deviationSeries, tube),
+        localPeak: localPeakDeviation(baselineContinuation, horizon),
+        maxGoalScore: baselineContinuation.maxGoalScore,
+        success: baselineContinuation.success
+      };
+      let best = null;
+      for (let iter = 0; iter < 3; iter += 1) {
+        const trials = [];
+        for (let n = 0; n < 14; n += 1) {
+          const offsets = mean.map((point, index) => ({
+            x: point.x + randNormal(rng) * std[index].x * (index === 0 || index === knotCount - 1 ? 0.18 : 1),
+            y: point.y + randNormal(rng) * std[index].y * (index === 0 || index === knotCount - 1 ? 0.18 : 1)
+          }));
+          const chunk = buildSmoothRelabelChunk(referenceChunk, offsets);
+          const continuation = simulateFromSnapshot(
+            candidate.rollout.snapshots[candidate.frame],
+            chunk,
+            candidate.rollout.mousePath,
+            demo,
+            candidate.frame
+          );
+          const offsetNorm = offsets.reduce((sum, point) => sum + point.x * point.x + point.y * point.y, 0);
+          const metrics = scoreRelabelOutcome(continuation, referenceChunk, chunk, tube, baseline, horizon, offsetNorm);
+          const trial = { offsets, chunk, continuation, ...metrics };
+          trials.push(trial);
+          if (!best || trial.score > best.score) best = trial;
+        }
+        trials.sort((a, b) => b.score - a.score);
+        const elite = trials.slice(0, 4);
+        mean = mean.map((_, index) => ({
+          x: elite.reduce((sum, trial) => sum + trial.offsets[index].x, 0) / elite.length,
+          y: elite.reduce((sum, trial) => sum + trial.offsets[index].y, 0) / elite.length
+        }));
+        std = std.map((_, index) => ({
+          x: Math.max(4, Math.sqrt(elite.reduce((sum, trial) => {
+            const d = trial.offsets[index].x - mean[index].x;
+            return sum + d * d;
+          }, 0) / elite.length)),
+          y: Math.max(4, Math.sqrt(elite.reduce((sum, trial) => {
+            const d = trial.offsets[index].y - mean[index].y;
+            return sum + d * d;
+          }, 0) / elite.length))
+        }));
+      }
+      if (!best || best.score < 0.12 || best.avgChange < 10.5) return null;
+      return {
+        frame: candidate.frame,
+        horizon,
+        rolloutId: candidate.rollout.rolloutId,
+        score: best.score,
+        success: best.continuation.success,
+        beforeRisk: candidate.risk,
+        avgChange: best.avgChange,
+        goalImprovement: best.goalImprovement,
+        chunk: best.chunk,
+        continuation: best.continuation
+      };
+    }
+
+    function formatSummary(summary) {
+      return summary.map(line => `<div>${line}</div>`).join("");
+    }
+
+    async function runPipeline() {
+      if (app.runningPipeline) return;
+      const demo = app.latestSuccessfulDemo || app.latestDemo;
+      if (!demo) return;
+      app.runningPipeline = true;
+      app.pipeline = null;
+      updateUI();
+      try {
+        const params = getParams();
+        const rng = createRng(1234567 + Math.floor(demo.maxGoalScore * 1000));
+        let mean = demo.controlPoints.map(point => ({ ...point }));
+        let std = mean.map((_, index) => ({
+          x: index === 0 || index === mean.length - 1 ? 4 : params.noisePx,
+          y: index === 0 || index === mean.length - 1 ? 4 : params.noisePx
+        }));
+        let previousTube = { rmin: 0.05, rmax: 0.16 };
+        const allRollouts = [];
+        const successfulRollouts = [];
+        const selectedRollouts = [];
+        const iterationSummaries = [];
+
+        for (let iteration = 0; iteration < params.iterations; iteration += 1) {
+          const batch = [];
+          for (let sample = 0; sample < params.samplesPerIteration; sample += 1) {
+            const controlPoints = sampleControlPoints(mean, std, rng);
+            const rollout = rolloutFromControlPoints(controlPoints, demo, params);
+            rollout.rolloutId = `k${iteration + 1}-n${sample + 1}`;
+            rollout.iteration = iteration + 1;
+            batch.push(rollout);
+
+            if ((sample + 1) % 6 === 0 || sample === params.samplesPerIteration - 1) {
+              const currentSuccesses = batch.filter(entry => entry.success).length;
+              dom.pipelineSummary.innerHTML = formatSummary([
+                `<strong>Iteration ${iteration + 1}/${params.iterations}</strong>`,
+                `Sampling rollout ${sample + 1}/${params.samplesPerIteration}`,
+                `${currentSuccesses} current successes in this batch`
+              ]);
+              app.pipeline = {
+                demo,
+                params,
+                allRollouts: allRollouts.concat(batch),
+                successfulRollouts: successfulRollouts.concat(batch.filter(entry => entry.success)),
+                selectedRollouts,
+                iterationSummaries,
+                tube: previousTube,
+                relabels: []
+              };
+              updateSummaryStats();
+              redrawAllPanels();
+              await yieldToBrowser();
+            }
+          }
+
+          const successful = batch.filter(rollout => rollout.success);
+          const peaks = successful.length ? successful.map(rollout => rollout.peakDeviation) : [previousTube.rmin, previousTube.rmax];
+          const tube = {
+            rmin: successful.length >= 3 ? quantile(peaks, params.qmin) : previousTube.rmin,
+            rmax: successful.length >= 3 ? quantile(peaks, params.qmax) : previousTube.rmax
+          };
+          previousTube = tube;
+
+          successful.forEach(rollout => {
+            rollout.reward = computeCurationReward(rollout, tube);
+          });
+          const selected = selectDiverseSubset(successful, params.selectedPerIteration);
+          const update = updateDistribution(selected, mean, demo, params);
+          mean = update.mean;
+          std = update.std;
+
+          batch.forEach(rollout => {
+            allRollouts.push(rollout);
+          });
+          successfulRollouts.push(...successful);
+          selectedRollouts.push(...selected);
+          iterationSummaries.push({
+            iteration: iteration + 1,
+            successes: successful.length,
+            selected: selected.length,
+            rmin: tube.rmin,
+            rmax: tube.rmax,
+            meanReward: successful.length ? successful.reduce((sum, rollout) => sum + rollout.reward, 0) / successful.length : 0
+          });
+
+          dom.pipelineSummary.innerHTML = formatSummary([
+            `<strong>Iteration ${iteration + 1}/${params.iterations}</strong>`,
+            `${successful.length} successful rollouts inside the simulator`,
+            `${selected.length} retained after curation and diversity selection`,
+            `Tube: [${tube.rmin.toFixed(3)}, ${tube.rmax.toFixed(3)}]`
+          ]);
+          app.pipeline = {
+            demo,
+            params,
+            allRollouts,
+            successfulRollouts,
+            selectedRollouts,
+            iterationSummaries,
+            tube: previousTube,
+            relabels: []
+          };
+          updateSummaryStats();
+          redrawAllPanels();
+          await yieldToBrowser();
+        }
+
+        const riskyCandidates = [];
+        selectedRollouts.forEach(rollout => {
+          const sampled = resampleStateSequence(rollout.boxStates, rollout.deviationSeries.length);
+          let lastChosen = -999;
+          rollout.deviationSeries.forEach((risk, frame) => {
+            if (frame < 16 || frame > rollout.deviationSeries.length - 18) return;
+            if (frame - lastChosen < 14) return;
+            riskyCandidates.push({ rollout, frame, risk, state: sampled[frame] });
+            lastChosen = frame;
+          });
+        });
+        riskyCandidates.sort((a, b) => b.risk - a.risk);
+        riskyCandidates.length = Math.min(riskyCandidates.length, Math.max(params.relabelCount * 4, 10));
+        const relabels = [];
+        for (const candidate of riskyCandidates) {
+          if (relabels.length >= params.relabelCount) break;
+          const relabel = relabelWithCem(candidate, previousTube, demo, params, rng);
+          if (relabel && relabel.success) {
+            relabels.push(relabel);
+            dom.pipelineSummary.innerHTML = formatSummary([
+              `<strong>Final relabeling</strong>`,
+              `${relabels.length}/${params.relabelCount} risky chunks refined`,
+              `${selectedRollouts.length} curated trajectories retained`
+            ]);
+            await yieldToBrowser();
+          }
+        }
+
+        const coverageScore = selectedRollouts.length
+          ? quantile(selectedRollouts.map(rollout => rollout.peakDeviation), 0.75)
+          : 0;
+        const datasetJson = {
+          task: "RotateBox-Pitch against wall",
+          generatedAt: new Date().toISOString(),
+          demo: {
+            source: demo.source,
+            success: demo.success,
+            maxGoalScore: Number(demo.maxGoalScore.toFixed(3)),
+            controlPoints: demo.controlPoints.map(point => ({
+              x: Number(point.x.toFixed(2)),
+              y: Number(point.y.toFixed(2))
+            }))
+          },
+          hyperparameters: params,
+          iterations: iterationSummaries.map(item => ({
+            iteration: item.iteration,
+            successes: item.successes,
+            selected: item.selected,
+            rmin: Number(item.rmin.toFixed(4)),
+            rmax: Number(item.rmax.toFixed(4)),
+            meanReward: Number(item.meanReward.toFixed(4))
+          })),
+          datasetSummary: {
+            successfulRollouts: successfulRollouts.length,
+            curatedRollouts: selectedRollouts.length,
+            relabeledChunks: relabels.length,
+            coverageScore: Number(coverageScore.toFixed(4)),
+            meanPeakDeviation: Number((selectedRollouts.length
+              ? selectedRollouts.reduce((sum, rollout) => sum + rollout.peakDeviation, 0) / selectedRollouts.length
+              : 0).toFixed(4))
+          },
+          trajectories: selectedRollouts.slice(0, 16).map(rollout => ({
+            rolloutId: rollout.rolloutId,
+            iteration: rollout.iteration,
+            reward: Number(rollout.reward.toFixed(4)),
+            peakDeviation: Number(rollout.peakDeviation.toFixed(4)),
+            maxGoalScore: Number(rollout.maxGoalScore.toFixed(4)),
+            controlPoints: rollout.controlPoints.map(point => ({
+              x: Number(point.x.toFixed(1)),
+              y: Number(point.y.toFixed(1))
+            }))
+          })),
+          relabels: relabels.map(item => ({
+            rolloutId: item.rolloutId,
+            frame: item.frame,
+            score: Number(item.score.toFixed(4)),
+            beforeRisk: Number(item.beforeRisk.toFixed(4))
+          }))
+        };
+
+        app.pipeline = {
+          demo,
+          params,
+          allRollouts,
+          successfulRollouts,
+          selectedRollouts,
+          iterationSummaries,
+          tube: previousTube,
+          relabels,
+          coverageScore,
+          datasetJson
+        };
+        dom.pipelineSummary.innerHTML = formatSummary([
+          `<strong>Done</strong>`,
+          `${successfulRollouts.length} successful samples over ${params.iterations} iterations`,
+          `${selectedRollouts.length} trajectories kept after curation`,
+          `${relabels.length} risky chunks relabeled with short-horizon search`
+        ]);
+        updateSummaryStats();
+        redrawAllPanels();
+      } catch (error) {
+        console.error(error);
+        dom.pipelineSummary.innerHTML = formatSummary([
+          `<strong>Pipeline error</strong>`,
+          `${error && error.message ? error.message : String(error)}`
+        ]);
+      } finally {
+        app.runningPipeline = false;
+        updateUI();
+      }
+    }
+
+    function updateSummaryStats() {
+      const pipeline = app.pipeline;
+      if (!pipeline) {
+        dom.summarySuccesses.textContent = "0";
+        dom.summarySelected.textContent = "0";
+        dom.summaryRelabeled.textContent = "0";
+        dom.summaryCoverage.textContent = "0.00";
+        return;
+      }
+      dom.summarySuccesses.textContent = `${pipeline.successfulRollouts.length}`;
+      dom.summarySelected.textContent = `${pipeline.selectedRollouts.length}`;
+      dom.summaryRelabeled.textContent = `${pipeline.relabels.length}`;
+      dom.summaryCoverage.textContent = pipeline.coverageScore ? pipeline.coverageScore.toFixed(2) : "0.00";
+    }
+
+    function updateUI() {
+      const simSuccess = isSuccessfulState(app.sim);
+      const liveSuccess = app.sim.liveGoalScore >= 0.82;
+      dom.statusPill.className = `pill ${liveSuccess ? "success" : "fail"}`;
+      dom.statusPill.innerHTML = `<strong>Success</strong><span>${simSuccess ? "Predicate satisfied" : liveSuccess ? "Nearly locked in" : "Not yet"}</span>`;
+
+      const demo = app.latestSuccessfulDemo || app.latestDemo;
+      if (!demo) {
+        dom.demoPill.innerHTML = `<strong>Demo</strong><span>Waiting for a recorded attempt</span>`;
+      } else if (demo.success) {
+        dom.demoPill.innerHTML = `<strong>Demo</strong><span>${demo.source === "seeded" ? "Seeded" : "Manual"} success captured</span>`;
+      } else {
+        dom.demoPill.innerHTML = `<strong>Demo</strong><span>Recorded but not successful</span>`;
+      }
+
+      dom.pipelinePill.innerHTML = `<strong>Pipeline</strong><span>${app.runningPipeline ? "Running..." : app.pipeline ? "Done" : "Idle"}</span>`;
+      dom.runPipelineBtn.disabled = !demo || app.runningPipeline;
+      dom.downloadBtn.disabled = !app.pipeline;
+      dom.seedDemoBtn.disabled = app.runningPipeline;
+      dom.resetBtn.disabled = app.runningPipeline;
+      dom.clearDemoBtn.disabled = app.runningPipeline;
+      knobIds.forEach(id => {
+        document.getElementById(id).disabled = app.runningPipeline;
+      });
+      dom.simCanvas.classList.toggle("dragging", app.pointer.active);
+    }
+
+    function drawRoundedRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+
+    function drawSim() {
+      const canvas = dom.simCanvas;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      gradient.addColorStop(0, "#ffffff");
+      gradient.addColorStop(1, "#f7f2e7");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.strokeStyle = "rgba(35, 57, 93, 0.08)";
+      ctx.lineWidth = 1;
+      for (let x = 40; x < canvas.width; x += 40) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+      for (let y = 40; y < canvas.height; y += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = "rgba(232, 192, 107, 0.18)";
+      ctx.fillRect(SIM.wallX - 18, 0, 18, canvas.height);
+      ctx.fillStyle = "rgba(27, 27, 27, 0.05)";
+      ctx.fillRect(0, SIM.floorY, canvas.width, canvas.height - SIM.floorY);
+
+      ctx.strokeStyle = "rgba(27, 27, 27, 0.65)";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(0, SIM.floorY);
+      ctx.lineTo(canvas.width, SIM.floorY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(SIM.wallX, 0);
+      ctx.lineTo(SIM.wallX, canvas.height);
+      ctx.stroke();
+
+      if (app.latestSuccessfulDemo && !app.pointer.active && !app.autoplay) {
+        ctx.strokeStyle = "rgba(35, 57, 93, 0.24)";
+        ctx.lineWidth = 3;
+        ctx.setLineDash([8, 8]);
+        ctx.beginPath();
+        app.latestSuccessfulDemo.commandPath.forEach((point, index) => {
+          if (index === 0) ctx.moveTo(point.x, point.y);
+          else ctx.lineTo(point.x, point.y);
+        });
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      const pose = app.sim.lastPose || getPose(app.sim.box);
+      const corners = pose.corners;
+      ctx.fillStyle = "rgba(35, 57, 93, 0.12)";
+      ctx.beginPath();
+      ctx.ellipse(pose.x, SIM.floorY + 10, 88, 14, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#f4e6c8";
+      ctx.strokeStyle = "#1b1b1b";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      corners.forEach((corner, index) => {
+        if (index === 0) ctx.moveTo(corner.x, corner.y);
+        else ctx.lineTo(corner.x, corner.y);
+      });
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(35, 57, 93, 0.45)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(corners[0].x, corners[0].y);
+      ctx.lineTo(corners[2].x, corners[2].y);
+      ctx.moveTo(corners[1].x, corners[1].y);
+      ctx.lineTo(corners[3].x, corners[3].y);
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(232, 192, 107, 0.8)";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(SIM.wallX - 56, SIM.floorY - 56, 54, -Math.PI / 2, 0);
+      ctx.stroke();
+      ctx.fillStyle = "#e8c06b";
+      ctx.beginPath();
+      ctx.arc(SIM.wallX - 56, SIM.floorY - 56, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "rgba(214, 232, 255, 0.92)";
+      ctx.strokeStyle = "#23395d";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(app.sim.mouse.x, app.sim.mouse.y, SIM.mouseRadius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#23395d";
+      ctx.beginPath();
+      ctx.arc(app.sim.mouse.x, app.sim.mouse.y, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#1b1b1b";
+      ctx.font = '12px "Roboto Mono", monospace';
+      ctx.fillText("Wall", SIM.wallX - 42, 26);
+      ctx.fillText(`Live: ${(app.sim.liveGoalScore * 100).toFixed(0)}%`, 30, 32);
+      ctx.fillText(`Settled: ${(app.sim.goalScore * 100).toFixed(0)}%`, 122, 32);
+      ctx.fillText(`Angle: ${(app.sim.box.angle * 180 / Math.PI).toFixed(1)}°`, 30, 52);
+      ctx.fillText(`m = ${SIM.boxMass.toFixed(1)}   I = ${app.sim.box.inertia.toFixed(0)}   g = ${SIM.gravity.toFixed(0)} px/s²`, 30, 72);
+      ctx.fillText(`Try pushing across the roofline`, 30, canvas.height - 26);
+    }
+
+    function drawPlaceholder(canvas, title) {
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "rgba(255, 255, 255, 0.78)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = "rgba(27, 27, 27, 0.08)";
+      ctx.strokeRect(0.5, 0.5, canvas.width - 1, canvas.height - 1);
+      ctx.fillStyle = "#777";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = '14px "Roboto Mono", monospace';
+      ctx.fillText(title, canvas.width / 2, canvas.height / 2);
+      ctx.textAlign = "left";
+    }
+
+    function workspaceToCanvas(point, rect) {
+      return {
+        x: rect.x + (point.x / SIM.width) * rect.w,
+        y: rect.y + (point.y / SIM.height) * rect.h
+      };
+    }
+
+    function drawWorkspaceFrame(ctx, rect) {
+      const floorY = rect.y + (SIM.floorY / SIM.height) * rect.h;
+      const wallX = rect.x + (SIM.wallX / SIM.width) * rect.w;
+      ctx.fillStyle = "rgba(27, 27, 27, 0.04)";
+      ctx.fillRect(rect.x, floorY, rect.w, rect.y + rect.h - floorY);
+      ctx.strokeStyle = "rgba(27, 27, 27, 0.16)";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(rect.x, floorY);
+      ctx.lineTo(rect.x + rect.w, floorY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(wallX, rect.y);
+      ctx.lineTo(wallX, rect.y + rect.h);
+      ctx.stroke();
+      ctx.strokeStyle = "rgba(27, 27, 27, 0.08)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+    }
+
+    function drawStateTrajectory(ctx, rect, states, strokeStyle, lineWidth = 1.3, dash = []) {
+      if (!states || !states.length) return;
+      ctx.strokeStyle = strokeStyle;
+      ctx.lineWidth = lineWidth;
+      ctx.setLineDash(dash);
+      ctx.beginPath();
+      states.forEach((point, index) => {
+        const mapped = workspaceToCanvas(point, rect);
+        if (index === 0) ctx.moveTo(mapped.x, mapped.y);
+        else ctx.lineTo(mapped.x, mapped.y);
+      });
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    function drawSmoothTrajectory(ctx, rect, states, strokeStyle, lineWidth = 1.6, dash = []) {
+      if (!states || !states.length) return;
+      const mapped = states.map(point => workspaceToCanvas(point, rect));
+      ctx.strokeStyle = strokeStyle;
+      ctx.lineWidth = lineWidth;
+      ctx.setLineDash(dash);
+      ctx.beginPath();
+      ctx.moveTo(mapped[0].x, mapped[0].y);
+      if (mapped.length === 1) {
+        ctx.lineTo(mapped[0].x, mapped[0].y);
+      } else if (mapped.length === 2) {
+        ctx.lineTo(mapped[1].x, mapped[1].y);
+      } else {
+        for (let i = 1; i < mapped.length - 1; i += 1) {
+          const midX = (mapped[i].x + mapped[i + 1].x) * 0.5;
+          const midY = (mapped[i].y + mapped[i + 1].y) * 0.5;
+          ctx.quadraticCurveTo(mapped[i].x, mapped[i].y, midX, midY);
+        }
+        const last = mapped[mapped.length - 1];
+        const prev = mapped[mapped.length - 2];
+        ctx.quadraticCurveTo(prev.x, prev.y, last.x, last.y);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    function wrapText(ctx, text, maxWidth) {
+      const words = String(text).split(/\s+/).filter(Boolean);
+      if (!words.length) return [""];
+      const lines = [];
+      let current = words[0];
+      for (let i = 1; i < words.length; i += 1) {
+        const trial = `${current} ${words[i]}`;
+        if (ctx.measureText(trial).width <= maxWidth) current = trial;
+        else {
+          lines.push(current);
+          current = words[i];
+        }
+      }
+      lines.push(current);
+      return lines;
+    }
+
+    function drawWrappedText(ctx, text, x, y, maxWidth, lineHeight = 16) {
+      const lines = wrapText(ctx, text, maxWidth);
+      lines.forEach((line, index) => {
+        ctx.fillText(line, x, y + index * lineHeight);
+      });
+      return y + lines.length * lineHeight;
+    }
+
+    function drawInfoCard(ctx, x, y, width, height, title, lines) {
+      drawRoundedRect(ctx, x, y, width, height, 16);
+      ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(27, 27, 27, 0.08)";
+      ctx.stroke();
+      ctx.fillStyle = "#1b1b1b";
+      ctx.font = '12px "Roboto Mono", monospace';
+      ctx.fillText(title, x + 14, y + 22);
+      let cursorY = y + 48;
+      const maxWidth = width - 28;
+      for (const line of lines) {
+        cursorY = drawWrappedText(ctx, line, x + 14, cursorY, maxWidth, 15) + 6;
+        if (cursorY > y + height - 14) break;
+      }
+    }
+
+    function drawLegendRow(ctx, x, y, items, gap = 16) {
+      ctx.save();
+      ctx.font = '12px "Roboto Mono", monospace';
+      ctx.textBaseline = "middle";
+      let cursorX = x;
+      for (const item of items) {
+        ctx.strokeStyle = item.strokeStyle || "#1b1b1b";
+        ctx.fillStyle = item.fillStyle || item.strokeStyle || "#1b1b1b";
+        ctx.lineWidth = item.lineWidth || 2;
+        ctx.setLineDash(item.dash || []);
+        ctx.beginPath();
+        ctx.moveTo(cursorX, y);
+        ctx.lineTo(cursorX + 24, y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        cursorX += 32;
+        ctx.fillStyle = "#1b1b1b";
+        ctx.fillText(item.label, cursorX, y);
+        cursorX += ctx.measureText(item.label).width + gap;
+      }
+      ctx.restore();
+    }
+
+    function drawEnsemblePanel() {
+      const canvas = dom.ensembleCanvas;
+      const ctx = canvas.getContext("2d");
+      const pipeline = app.pipeline;
+      if (!pipeline || !pipeline.successfulRollouts.length) {
+        drawPlaceholder(canvas, "Run PGDG to generate a trajectory ensemble.");
+        return;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const rect = { x: 28, y: 20, w: 1048, h: 300 };
+      const infoX = 1112;
+      const infoY = 30;
+      const totalRollouts = pipeline.allRollouts ? pipeline.allRollouts.length : 0;
+      const coverageScore = typeof pipeline.coverageScore === "number" ? pipeline.coverageScore : 0;
+      drawWorkspaceFrame(ctx, rect);
+
+      drawStateTrajectory(ctx, rect, pipeline.demo.mousePath, "#1b1b1b", 2.1, [7, 6]);
+
+      pipeline.successfulRollouts.forEach(rollout => {
+        drawStateTrajectory(ctx, rect, rollout.mousePath, "rgba(43, 122, 75, 0.10)", 1.1);
+      });
+
+      drawLegendRow(ctx, 28, 22, [
+        { label: "demo", strokeStyle: "#1b1b1b", lineWidth: 2, dash: [7, 6] },
+        { label: "generated trajectories", strokeStyle: "rgba(43, 122, 75, 0.65)", lineWidth: 2 }
+      ], 14);
+
+      drawInfoCard(
+        ctx,
+        infoX,
+        infoY,
+        220,
+        240,
+        "Ensemble Summary",
+        [
+          `${pipeline.demo.controlPoints.length} control points on the fitted demo curve`,
+          `${pipeline.successfulRollouts.length} successful generated trajectories`,
+          `${pipeline.iterationSummaries.length} sampling iterations completed`,
+          `${totalRollouts} total rollouts simulated`,
+          `${coverageScore.toFixed(2)} coverage score across the generated set`
+        ]
+      );
+    }
+
+    function redrawAllPanels() {
+      drawSim();
+      drawEnsemblePanel();
+    }
+
+    function updateLoop(now) {
+      const dtMs = Math.min(48, now - app.lastTime);
+      app.lastTime = now;
+      app.accumulator += dtMs / 1000;
+      while (app.accumulator >= SIM.dt) {
+        let target = { x: SIM.parkedMouse.x, y: SIM.parkedMouse.y, engaged: false };
+        let commandActive = false;
+
+        let shouldFinalizeAfterStep = false;
+
+        if (app.pointer.active) {
+          target = { x: app.pointer.x, y: app.pointer.y, engaged: true };
+          commandActive = true;
+        } else if (app.autoplay) {
+          target = seededPolicy(app.autoplay.frame, app.sim);
+          commandActive = true;
+          app.autoplay.frame += 1;
+          if (app.autoplay.frame > app.autoplay.totalFrames) {
+            app.autoplay = null;
+            app.pendingFinalizeFrames = 12;
+          }
+        } else if (app.pendingFinalizeFrames > 0) {
+          target = { ...app.activeTarget, engaged: true };
+          app.pendingFinalizeFrames -= 1;
+          if (app.pendingFinalizeFrames === 0) {
+            shouldFinalizeAfterStep = true;
+          }
+        }
+
+        app.activeTarget = target;
+        stepSimulation(app.sim, target);
+        recordAttemptFrame(commandActive);
+        if (shouldFinalizeAfterStep) {
+          finalizeAttempt();
+        }
+        app.accumulator -= SIM.dt;
+      }
+      redrawAllPanels();
+      requestAnimationFrame(updateLoop);
+    }
+
+    dom.simCanvas.addEventListener("pointerdown", event => {
+      if (app.runningPipeline || app.autoplay) return;
+      if (app.autoResetOnNextDrag) {
+        clearRecordedDemo();
+        resetTask({ clearPipeline: true });
+        return;
+      }
+      const point = getCanvasPoint(event);
+      app.pointer.active = true;
+      app.pointer.x = point.x;
+      app.pointer.y = point.y;
+      app.pendingFinalizeFrames = 0;
+      startAttempt("manual");
+      dom.simCanvas.setPointerCapture(event.pointerId);
+      updateUI();
+    });
+
+    dom.simCanvas.addEventListener("pointermove", event => {
+      if (!app.pointer.active) return;
+      const point = getCanvasPoint(event);
+      app.pointer.x = point.x;
+      app.pointer.y = point.y;
+    });
+
+    function releasePointer(event) {
+      if (!app.pointer.active) return;
+      const point = getCanvasPoint(event);
+      app.pointer.x = point.x;
+      app.pointer.y = point.y;
+      app.pointer.active = false;
+      app.pendingFinalizeFrames = 12;
+      updateUI();
+    }
+
+    dom.simCanvas.addEventListener("pointerup", releasePointer);
+    dom.simCanvas.addEventListener("pointercancel", releasePointer);
+    dom.simCanvas.addEventListener("pointerleave", event => {
+      if (app.pointer.active && event.buttons === 0) releasePointer(event);
+    });
+
+    dom.resetBtn.addEventListener("click", () => {
+      resetTask({ clearPipeline: false });
+    });
+
+    dom.clearDemoBtn.addEventListener("click", () => {
+      clearRecordedDemo();
+      resetTask({ clearPipeline: true });
+    });
+
+    dom.seedDemoBtn.addEventListener("click", () => {
+      beginSeededDemo();
+    });
+
+    dom.runPipelineBtn.addEventListener("click", () => {
+      runPipeline();
+    });
+
+    dom.downloadBtn.addEventListener("click", () => {
+      if (!app.pipeline || !app.pipeline.datasetJson) return;
+      const blob = new Blob([JSON.stringify(app.pipeline.datasetJson, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "pgdg-demo-dataset.json";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    });
+
+    knobIds.forEach(id => {
+      document.getElementById(id).addEventListener("input", () => {
+        refreshKnobLabels();
+        if (id === "controlPointCount" && !app.runningPipeline && (app.latestDemo || app.latestSuccessfulDemo)) {
+          refitStoredDemos();
+        }
+      });
+    });
+
+    function notifyParentHeight() {
+      if (window.parent === window) return;
+      window.parent.postMessage({
+        type: "pgdg-demo-height",
+        height: Math.ceil(document.documentElement.scrollHeight)
+      }, "*");
+    }
+
+    if (window.parent !== window) {
+      if (typeof ResizeObserver !== "undefined") {
+        const resizeObserver = new ResizeObserver(() => {
+          notifyParentHeight();
+        });
+        resizeObserver.observe(document.body);
+      }
+      window.addEventListener("load", notifyParentHeight);
+      window.addEventListener("resize", notifyParentHeight);
+    }
+
+    refreshKnobLabels();
+    resetTask({ clearPipeline: true });
+    updateSummaryStats();
+    updateUI();
+    notifyParentHeight();
+    requestAnimationFrame(updateLoop);
+  </script>
+</body>
+</html>
