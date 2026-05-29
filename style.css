@@ -114,13 +114,22 @@ body {
   line-height: 1.6;
   margin-top: -32.5px;
   margin-bottom: 17.5px;
-  text-align: left;
+  text-align: center;
 }
 .authors span {
   display: block;
   font-size: 14px;
   color: #555;
   margin-top: 0;
+}
+.authors .author-names {
+  font-size: 16px;
+  color: #333;
+  text-wrap: balance;
+}
+.authors .author {
+  display: inline;
+  white-space: nowrap;
 }
 .authors .affiliation {
   font-weight: 600;
@@ -133,6 +142,46 @@ body {
 }
 .authors a:hover {
   text-decoration: underline;
+}
+
+/* --- Paper Links --- */
+.paper-links {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.paper-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1b1b1b;
+  background: #f3ecdf;
+  border: 1px solid #e6dcc8;
+  padding: 9px 22px;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.paper-link-btn:hover {
+  background: #ebe0cd;
+  border-color: #ddd0b6;
+  transform: translateY(-1px);
+}
+.paper-link-btn .btn-icon {
+  width: 16px;
+  height: 16px;
+}
+.paper-link-btn .ai {
+  font-size: 17px;
+  line-height: 1;
+}
+
+.modelname {
+  font-family: 'Roboto Mono', monospace;
 }
 
 /* --- Section Styles --- */

@@ -199,19 +199,12 @@
       cursor: grabbing;
     }
 
-    .sim-hud {
-      position: absolute;
-      inset: 18px 18px auto 18px;
-      display: grid;
-      gap: 10px;
-      pointer-events: none;
-    }
-
     .hud-row {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
       align-items: center;
+      margin-bottom: 12px;
     }
 
     .pill {
@@ -246,12 +239,11 @@
     }
 
     .hint-card {
-      max-width: 380px;
+      margin-top: 14px;
       padding: 12px 14px;
       border-radius: 14px;
       background: rgba(255, 255, 255, 0.78);
       border: 1px solid rgba(27, 27, 27, 0.11);
-      backdrop-filter: blur(10px);
       font-size: 15px;
       line-height: 1.55;
     }
@@ -262,6 +254,19 @@
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--muted);
+    }
+
+    .btn-ref {
+      display: inline-block;
+      border: 1.5px solid rgba(27, 27, 27, 0.85);
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--ink);
+      padding: 1px 10px;
+      border-radius: 999px;
+      font-size: 0.9em;
+      font-style: normal;
+      line-height: 1.4;
+      white-space: nowrap;
     }
 
     .button-row {
@@ -457,19 +462,17 @@
         <div class="card-body">
           <div class="card-kicker">Task</div>
           <h2 class="card-title">Tip-Against-Wall Box Task</h2>
+          <div class="hud-row">
+            <div id="statusPill" class="pill fail"><strong>Success</strong><span>Not yet</span></div>
+            <div id="demoPill" class="pill"><strong>Demo</strong><span>Waiting for a recorded attempt</span></div>
+            <div id="pipelinePill" class="pill"><strong>Pipeline</strong><span>Idle</span></div>
+          </div>
           <div class="sim-frame">
             <canvas id="simCanvas" width="920" height="560"></canvas>
-            <div class="sim-hud">
-              <div class="hud-row">
-                <div id="statusPill" class="pill fail"><strong>Success</strong><span>Not yet</span></div>
-                <div id="demoPill" class="pill"><strong>Demo</strong><span>Waiting for a recorded attempt</span></div>
-                <div id="pipelinePill" class="pill"><strong>Pipeline</strong><span>Idle</span></div>
-              </div>
-              <div class="hint-card">
-                <strong>How To Use</strong><br>
-                Route the sphere around the center block, reach the top-left of the box, push across the roofline toward the wall, and hold long enough for the box to settle near 90 degrees. The source demo may touch the block, but sampled PGDG rollouts must stay clear of it. Use <em>Seeded demo</em> if you want a guaranteed successful reference before sampling.
-              </div>
-            </div>
+          </div>
+          <div class="hint-card">
+            <strong>How To Use</strong><br>
+            Route the sphere around the center block, reach the top-left of the box, push across the roofline toward the wall, and hold long enough for the box to settle near 90 degrees. The source demo may touch the block, but sampled PGDG rollouts must stay clear of it. Use <span class="btn-ref">Seeded demo</span> if you want a guaranteed successful reference before sampling.
           </div>
           <div class="button-row">
             <button id="resetBtn">Reset task</button>
