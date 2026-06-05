@@ -180,6 +180,22 @@ body {
   font-size: 17px;
   line-height: 1;
 }
+.paper-link-btn-disabled {
+  color: #8a8170;
+  background: #f7f2e8;
+  border-color: #ece2cd;
+  cursor: not-allowed;
+}
+.paper-link-btn-disabled:hover {
+  background: #f7f2e8;
+  border-color: #ece2cd;
+  transform: none;
+}
+.paper-link-btn-note {
+  font-weight: 500;
+  font-size: 13px;
+  opacity: 0.8;
+}
 
 .modelname {
   font-family: 'Roboto Mono', monospace;
